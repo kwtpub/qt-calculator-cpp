@@ -25,10 +25,14 @@ private slots:
     void onEqualsClicked();
 
 private:
+    enum class ButtonKind { Digit, Operator, Function, Action, Equals };
+
     QLineEdit* expressionEdit_;
     QLabel* resultLabel_;
+    QLabel* historyLabel_;
 
-    QPushButton* makeButton(const QString& text, const QString& objectName);
+    QPushButton* makeButton(const QString& text, ButtonKind kind);
     void appendText(const QString& text);
     void compute();
+    void applyTheme();
 };
