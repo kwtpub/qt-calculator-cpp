@@ -1,5 +1,4 @@
-#include "parser.h"
-#include "evaluator.h"
+#include "eval/evaluator.h"
 
 #include <cmath>
 #include <cstdio>
@@ -9,9 +8,8 @@ static int passed = 0;
 static int failed = 0;
 
 static void check_eq(const std::string& expr, double expected, double tol = 1e-9) {
-    Evaluator ev;
     try {
-        double r = ev.evaluate(expr);
+        double r = eval::evaluate(expr);
         if (std::fabs(r - expected) <= tol) {
             ++passed;
             std::printf("[OK]   %s = %.12g\n", expr.c_str(), r);
@@ -26,9 +24,8 @@ static void check_eq(const std::string& expr, double expected, double tol = 1e-9
 }
 
 static void check_throws(const std::string& expr, const std::string& reason) {
-    Evaluator ev;
     try {
-        double r = ev.evaluate(expr);
+        double r = eval::evaluate(expr);
         ++failed;
         std::printf("[FAIL] %s should throw (%s), got %.12g\n", expr.c_str(), reason.c_str(), r);
     } catch (const std::exception&) {

@@ -1,4 +1,4 @@
-#include "main_window.h"
+#include "ui/main_window.h"
 
 #include <QApplication>
 
@@ -7,7 +7,7 @@ int main(int argc, char* argv[]) {
     app.setApplicationName("Calculator");
     app.setOrganizationName("M3O-103BV-25");
 
-    MainWindow w;
+    ui::MainWindow w;
     w.show();
 
     return app.exec();

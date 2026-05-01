@@ -13,14 +13,42 @@ endif()
 
 find_package(Qt6 COMPONENTS Widgets REQUIRED)
 
+set(PARSER_SOURCES
+    src/parser/tokenizer.cpp
+    src/parser/tokenizer.h
+    src/parser/shunting_yard.cpp
+    src/parser/shunting_yard.h
+    src/parser/parser.h
+    src/parser/parse_error.h
+    src/parser/token.h
+)
+
+set(EVAL_SOURCES
+    src/eval/functions.cpp
+    src/eval/functions.h
+    src/eval/operators.cpp
+    src/eval/operators.h
+    src/eval/evaluator.cpp
+    src/eval/evaluator.h
+    src/eval/eval_error.h
+)
+
+set(UI_SOURCES
+    src/ui/main_window.cpp
+    src/ui/main_window.h
+    src/ui/theme.cpp
+    src/ui/theme.h
+    src/ui/button_layout.cpp
+    src/ui/button_layout.h
+    src/ui/format.cpp
+    src/ui/format.h
+)
+
 add_executable(calculator
     src/main.cpp
-    src/main_window.cpp
-    src/main_window.h
-    src/parser.cpp
-    src/parser.h
-    src/evaluator.cpp
-    src/evaluator.h
+    ${PARSER_SOURCES}
+    ${EVAL_SOURCES}
+    ${UI_SOURCES}
 )
 
 target_include_directories(calculator PRIVATE src)
@@ -34,6 +62,10 @@ if(APPLE)
 endif()
 
 enable_testing()
-add_executable(parser_tests tests/parser_tests.cpp src/parser.cpp src/evaluator.cpp)
+add_executable(parser_tests
+    tests/parser_tests.cpp
+    ${PARSER_SOURCES}
+    ${EVAL_SOURCES}
+)
 target_include_directories(parser_tests PRIVATE src)
 add_test(NAME parser_tests COMMAND parser_tests)
