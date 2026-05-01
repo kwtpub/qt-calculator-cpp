@@ -1,0 +1,104 @@
+% Блок-схема функции MainWindow::compute() — обработка нажатия кнопки "="
+% ГОСТ 19.701-90, src/ui/main_window.cpp
+
+\documentclass[a4paper]{article}
+\usepackage[T2A]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[russian]{babel}
+\usepackage[a4paper,margin=1.5cm]{geometry}
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric, arrows.meta, positioning, calc}
+
+\tikzset{
+  terminal/.style={
+    rectangle, rounded corners=8pt,
+    draw=black, line width=1pt,
+    minimum width=4.6cm, minimum height=0.9cm,
+    text centered, font=\small
+  },
+  process/.style={
+    rectangle,
+    draw=black, line width=1pt,
+    minimum width=4.6cm, minimum height=0.9cm,
+    text centered, font=\small
+  },
+  decision/.style={
+    diamond, aspect=2.4,
+    draw=black, line width=1pt,
+    inner sep=1pt,
+    minimum width=3.4cm, minimum height=0.9cm,
+    text centered, font=\footnotesize
+  },
+  io/.style={
+    trapezium, trapezium left angle=75, trapezium right angle=105,
+    draw=black, line width=1pt,
+    minimum width=4.6cm, minimum height=0.9cm,
+    text centered, font=\small, align=center
+  },
+  predefined/.style={
+    rectangle, double, double distance=2pt,
+    draw=black, line width=1pt,
+    minimum width=4.6cm, minimum height=0.9cm,
+    text centered, font=\small
+  },
+  arrow/.style={->, >=Stealth, line width=1pt}
+}
+
+\begin{document}
+\begin{center}
+\textbf{Блок-схема функции \texttt{MainWindow::compute()}}
+\end{center}
+
+\begin{center}
+\begin{tikzpicture}[node distance=0.7cm]
+
+\node (start)  [terminal]                          {Начало};
+\node (read)   [io,        below=of start]         {Прочитать строку из поля ввода};
+\node (trim)   [process,   below=of read]          {expr = строка без пробелов по краям};
+\node (empty)  [decision,  below=of trim]          {expr пустая?};
+
+\node (clrRes) [io,        right=2.5cm of empty]   {Очистить поле результата};
+\node (retE)   [terminal,  below=of clrRes]        {Конец};
+
+\node (calc)   [predefined, below=of empty]        {r = evaluate(expr)};
+
+\node (err)    [decision,  below=of calc]          {Произошла ошибка?};
+
+\node (histE)  [process,   below=of err, xshift=-3.4cm]
+                                                   {history = expr};
+\node (showE)  [io,        below=of histE, align=center]
+                                                   {Показать сообщение об ошибке (красным)};
+
+\node (histOk) [process,   below=of err, xshift=3.4cm]
+                                                   {history = expr + " ="};
+\node (fmt)    [predefined, below=of histOk]       {text = format\_result(r)};
+\node (showOk) [io,        below=of fmt, align=center]
+                                                   {Показать text (зелёным)};
+
+\node (finish) [terminal,  below=2.0cm of err, yshift=-3.6cm]
+                                                   {Конец};
+
+\draw [arrow] (start) -- (read);
+\draw [arrow] (read)  -- (trim);
+\draw [arrow] (trim)  -- (empty);
+
+\draw [arrow] (empty) -- node[above] {Да} (clrRes);
+\draw [arrow] (clrRes) -- (retE);
+
+\draw [arrow] (empty) -- node[left]  {Нет} (calc);
+\draw [arrow] (calc)  -- (err);
+
+\draw [arrow] (err.west)  -| node[above, pos=0.25] {Да}  (histE.north);
+\draw [arrow] (err.east)  -| node[above, pos=0.25] {Нет} (histOk.north);
+
+\draw [arrow] (histE)  -- (showE);
+\draw [arrow] (histOk) -- (fmt);
+\draw [arrow] (fmt)    -- (showOk);
+
+\draw [arrow] (showE.south)  |- (finish.west);
+\draw [arrow] (showOk.south) |- (finish.east);
+
+\end{tikzpicture}
+\end{center}
+
+\end{document}

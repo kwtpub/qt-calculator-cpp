@@ -13,6 +13,8 @@
 #include <QPushButton>
 #include <QSignalMapper>
 
+class QGridLayout;
+
 namespace ui {
 
 class MainWindow : public QMainWindow {
@@ -37,7 +39,7 @@ private:
     QLabel* history_label_;
 
     void build_ui();
-    void build_buttons(class QGridLayout* grid);
+    void build_buttons(QGridLayout* grid);
     QPushButton* make_button(const ButtonSpec& spec);
 
     // Базовые операции над дисплеем, дёргаются из handle_action и keyPressEvent.

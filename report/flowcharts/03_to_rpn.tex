@@ -1,0 +1,156 @@
+% Блок-схема функции shunting_yard::to_rpn() — алгоритм Дейкстры
+% ГОСТ 19.701-90, src/parser/shunting_yard.cpp
+
+\documentclass[a4paper]{article}
+\usepackage[T2A]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[russian]{babel}
+\usepackage[a4paper,margin=1.2cm]{geometry}
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric, arrows.meta, positioning, calc}
+
+\tikzset{
+  terminal/.style={
+    rectangle, rounded corners=8pt,
+    draw=black, line width=1pt,
+    minimum width=4.4cm, minimum height=0.85cm,
+    text centered, font=\footnotesize
+  },
+  process/.style={
+    rectangle,
+    draw=black, line width=1pt,
+    minimum width=4.4cm, minimum height=0.85cm,
+    text centered, font=\footnotesize
+  },
+  decision/.style={
+    diamond, aspect=2.6,
+    draw=black, line width=1pt,
+    inner sep=1pt,
+    minimum width=3.2cm, minimum height=0.8cm,
+    text centered, font=\footnotesize
+  },
+  connector/.style={
+    circle,
+    draw=black, line width=1pt,
+    minimum size=0.7cm,
+    text centered, font=\footnotesize\bfseries
+  },
+  arrow/.style={->, >=Stealth, line width=1pt}
+}
+
+\begin{document}
+\begin{center}
+\textbf{Блок-схема функции \texttt{to\_rpn(tokens)}}
+\end{center}
+
+\begin{center}
+\begin{tikzpicture}[node distance=0.6cm]
+
+\node (start) [terminal]                  {Начало to\_rpn};
+\node (init)  [process,  below=of start]  {output = []; \quad ops = $\varnothing$};
+\node (loop)  [decision, below=of init]   {Есть ещё токен $t$?};
+\node (kind)  [decision, below=of loop, yshift=-0.4cm]
+                                          {Тип $t$?};
+
+\node (A) [connector, below left=1.2cm and 4.2cm of kind]  {A};
+\node (B) [connector, below left=1.2cm and 1.4cm of kind]  {B};
+\node (C) [connector, below=1.2cm of kind]                 {C};
+\node (D) [connector, below right=1.2cm and 1.4cm of kind] {D};
+\node (E) [connector, below right=1.2cm and 4.2cm of kind] {E};
+
+\node (R) [connector, right=5.5cm of loop] {R};
+
+\node (drainQ)  [decision, below=2.2cm of C]    {ops непуст?};
+\node (drainLP) [decision, below=of drainQ]     {top — это '('?};
+\node (errLP)   [terminal, right=2.6cm of drainLP] {Ошибка: лишняя '('};
+\node (drainPop)[process,  below=of drainLP]    {output.push(top); \quad ops.pop()};
+\node (ret)     [terminal, below=of drainPop]   {Возврат output};
+
+\draw [arrow] (start) -- (init);
+\draw [arrow] (init)  -- (loop);
+\draw [arrow] (loop)  -- node[left] {Да} (kind);
+\draw [arrow] (loop.east) -- node[above, font=\footnotesize] {Нет} (R.west);
+\draw [arrow] (R.south) |- ($(drainQ.east)+(0.2,0)$);
+
+\draw [arrow] (kind.west)  -| node[above, pos=0.2, font=\footnotesize] {Number}     (A);
+\draw [arrow] (kind.south) -| node[above, pos=0.7, font=\footnotesize] {Function}   (B);
+\draw [arrow] (kind.south) -- node[right, font=\footnotesize] {Operator}            (C);
+\draw [arrow] (kind.south) -| node[above, pos=0.7, font=\footnotesize] {LeftParen}  (D);
+\draw [arrow] (kind.east)  -| node[above, pos=0.2, font=\footnotesize] {RightParen} (E);
+
+\draw [arrow] (drainQ)  -- node[left] {Да} (drainLP);
+\draw [arrow] (drainQ.west) -- ++(-2.6,0) node[midway, above, font=\footnotesize] {Нет} |- (ret.west);
+\draw [arrow] (drainLP.east) -- node[above, font=\footnotesize] {Да} (errLP);
+\draw [arrow] (drainLP) -- node[left] {Нет} (drainPop);
+\draw [arrow] (drainPop) -- (ret);
+\draw [arrow] (drainPop.east) -- ++(2.6,0) |- (drainQ.east);
+
+\end{tikzpicture}
+\end{center}
+
+\bigskip
+
+\begin{center}
+\begin{tikzpicture}[node distance=0.55cm]
+
+\node (Ain)  [connector]                 {A};
+\node (Aop)  [process,  below=of Ain]    {output.push($t$)};
+\node (Aout) [connector, below=of Aop]   {R};
+\draw [arrow] (Ain) -- (Aop);
+\draw [arrow] (Aop) -- (Aout);
+
+\node (Bin)  [connector, right=1.4cm of Ain]  {B};
+\node (Bop)  [process,  below=of Bin]    {ops.push($t$)};
+\node (Bout) [connector, below=of Bop]   {R};
+\draw [arrow] (Bin) -- (Bop);
+\draw [arrow] (Bop) -- (Bout);
+
+\node (Din)  [connector, right=1.4cm of Bin]  {D};
+\node (Dop)  [process,  below=of Din]    {ops.push('(')};
+\node (Dout) [connector, below=of Dop]   {R};
+\draw [arrow] (Din) -- (Dop);
+\draw [arrow] (Dop) -- (Dout);
+
+\node (Cin)  [connector, right=2.0cm of Din]  {C};
+\node (Cchk) [decision, below=of Cin, yshift=-0.2cm, align=center]
+                                         {ops непуст и top $\neq$ '('\\ и should\_pop(top, $t$)?};
+\node (Cpop) [process,  below=of Cchk]   {output.push(top); \quad ops.pop()};
+\node (Cpush)[process,  right=2.4cm of Cchk]
+                                         {ops.push($t$)};
+\node (Cout) [connector, below=of Cpush] {R};
+\draw [arrow] (Cin)  -- (Cchk);
+\draw [arrow] (Cchk) -- node[left] {Да} (Cpop);
+\draw [arrow] (Cpop.west) -- ++(-2.0,0) |- (Cchk.west);
+\draw [arrow] (Cchk.east) -- node[above, font=\footnotesize] {Нет} (Cpush);
+\draw [arrow] (Cpush) -- (Cout);
+
+\node (Ein)    [connector, right=4.0cm of Cpush.east, anchor=west] {E};
+\node (Einit)  [process,   below=of Ein]      {found = false};
+\node (Eloop)  [decision,  below=of Einit]    {ops непуст?};
+\node (EisLP)  [decision,  below=of Eloop]    {top — это '('?};
+\node (Epop)   [process,   right=2.4cm of EisLP] {output.push(top); ops.pop()};
+\node (EpopL)  [process,   below=of EisLP]    {ops.pop(); found = true};
+\node (Echk)   [decision,  below=of EpopL]    {found?};
+\node (Eerr)   [terminal,  right=2.4cm of Echk] {Ошибка: лишняя ')'};
+\node (EisFn)  [decision,  below=of Echk]     {ops непуст и top — функция?};
+\node (EfnPop) [process,   below=of EisFn]    {output.push(top); ops.pop()};
+\node (Eout)   [connector, below=of EfnPop]   {R};
+
+\draw [arrow] (Ein)    -- (Einit);
+\draw [arrow] (Einit)  -- (Eloop);
+\draw [arrow] (Eloop)  -- node[left] {Да} (EisLP);
+\draw [arrow] (EisLP.east) -- node[above, font=\footnotesize] {Нет} (Epop);
+\draw [arrow] (Epop.south) |- ($(EisLP.east)+(0.6,-1.4)$) -| (Eloop.east);
+\draw [arrow] (EisLP)  -- node[left] {Да} (EpopL);
+\draw [arrow] (Eloop.west) -- ++(-2.4,0) node[midway, above, font=\footnotesize] {Нет} |- (Echk.west);
+\draw [arrow] (EpopL)  -- (Echk);
+\draw [arrow] (Echk.east) -- node[above, font=\footnotesize] {Нет} (Eerr);
+\draw [arrow] (Echk)   -- node[left] {Да} (EisFn);
+\draw [arrow] (EisFn)  -- node[left] {Да} (EfnPop);
+\draw [arrow] (EisFn.west) -- ++(-2.4,0) node[midway, above, font=\footnotesize] {Нет} |- (Eout.west);
+\draw [arrow] (EfnPop) -- (Eout);
+
+\end{tikzpicture}
+\end{center}
+
+\end{document}
