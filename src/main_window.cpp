@@ -1,5 +1,5 @@
-#include "MainWindow.h"
-#include "Evaluator.h"
+#include "main_window.h"
+#include "evaluator.h"
 
 #include <QGridLayout>
 #include <QVBoxLayout>
@@ -17,90 +17,90 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
     central->setObjectName("central");
     setCentralWidget(central);
 
-    auto* mainLayout = new QVBoxLayout(central);
-    mainLayout->setContentsMargins(20, 20, 20, 20);
-    mainLayout->setSpacing(12);
+    auto* main_layout = new QVBoxLayout(central);
+    main_layout->setContentsMargins(20, 20, 20, 20);
+    main_layout->setSpacing(12);
 
-    auto* displayPanel = new QWidget(central);
-    displayPanel->setObjectName("displayPanel");
-    auto* displayLayout = new QVBoxLayout(displayPanel);
-    displayLayout->setContentsMargins(20, 20, 20, 20);
-    displayLayout->setSpacing(6);
+    auto* display_panel = new QWidget(central);
+    display_panel->setObjectName("displayPanel");
+    auto* display_layout = new QVBoxLayout(display_panel);
+    display_layout->setContentsMargins(20, 20, 20, 20);
+    display_layout->setSpacing(6);
 
-    historyLabel_ = new QLabel("", displayPanel);
-    historyLabel_->setObjectName("historyLabel");
-    historyLabel_->setAlignment(Qt::AlignRight);
-    historyLabel_->setMinimumHeight(20);
-    displayLayout->addWidget(historyLabel_);
+    history_label_ = new QLabel("", display_panel);
+    history_label_->setObjectName("historyLabel");
+    history_label_->setAlignment(Qt::AlignRight);
+    history_label_->setMinimumHeight(20);
+    display_layout->addWidget(history_label_);
 
-    expressionEdit_ = new QLineEdit(displayPanel);
-    expressionEdit_->setObjectName("expressionEdit");
-    expressionEdit_->setPlaceholderText("0");
-    expressionEdit_->setAlignment(Qt::AlignRight);
-    expressionEdit_->setFrame(false);
-    displayLayout->addWidget(expressionEdit_);
+    expression_edit_ = new QLineEdit(display_panel);
+    expression_edit_->setObjectName("expressionEdit");
+    expression_edit_->setPlaceholderText("0");
+    expression_edit_->setAlignment(Qt::AlignRight);
+    expression_edit_->setFrame(false);
+    display_layout->addWidget(expression_edit_);
 
-    resultLabel_ = new QLabel("", displayPanel);
-    resultLabel_->setObjectName("resultLabel");
-    resultLabel_->setAlignment(Qt::AlignRight);
-    resultLabel_->setMinimumHeight(48);
-    displayLayout->addWidget(resultLabel_);
+    result_label_ = new QLabel("", display_panel);
+    result_label_->setObjectName("resultLabel");
+    result_label_->setAlignment(Qt::AlignRight);
+    result_label_->setMinimumHeight(48);
+    display_layout->addWidget(result_label_);
 
-    mainLayout->addWidget(displayPanel);
+    main_layout->addWidget(display_panel);
 
     auto* grid = new QGridLayout();
     grid->setSpacing(10);
-    mainLayout->addLayout(grid);
+    main_layout->addLayout(grid);
 
     using K = ButtonKind;
-    struct B { QString label; int row; int col; int rowSpan; int colSpan; K kind; const char* slot; };
+    struct B { QString label; int row; int col; int row_span; int col_span; K kind; const char* slot; };
     QList<B> buttons = {
-        {"C",     0, 0, 1, 1, K::Action,   SLOT(onClearClicked())},
-        {"⌫",    0, 1, 1, 1, K::Action,   SLOT(onBackspaceClicked())},
-        {"(",     0, 2, 1, 1, K::Action,   SLOT(onParenClicked())},
-        {")",     0, 3, 1, 1, K::Action,   SLOT(onParenClicked())},
+        {"C",     0, 0, 1, 1, K::Action,   SLOT(on_clear_clicked())},
+        {"⌫",    0, 1, 1, 1, K::Action,   SLOT(on_backspace_clicked())},
+        {"(",     0, 2, 1, 1, K::Action,   SLOT(on_paren_clicked())},
+        {")",     0, 3, 1, 1, K::Action,   SLOT(on_paren_clicked())},
 
-        {"ln",    1, 0, 1, 1, K::Function, SLOT(onFunctionClicked())},
-        {"exp",   1, 1, 1, 1, K::Function, SLOT(onFunctionClicked())},
-        {"sqrt",  1, 2, 1, 1, K::Function, SLOT(onFunctionClicked())},
-        {"abs",   1, 3, 1, 1, K::Function, SLOT(onFunctionClicked())},
+        {"ln",    1, 0, 1, 1, K::Function, SLOT(on_function_clicked())},
+        {"exp",   1, 1, 1, 1, K::Function, SLOT(on_function_clicked())},
+        {"sqrt",  1, 2, 1, 1, K::Function, SLOT(on_function_clicked())},
+        {"abs",   1, 3, 1, 1, K::Function, SLOT(on_function_clicked())},
 
-        {"7",     2, 0, 1, 1, K::Digit,    SLOT(onDigitClicked())},
-        {"8",     2, 1, 1, 1, K::Digit,    SLOT(onDigitClicked())},
-        {"9",     2, 2, 1, 1, K::Digit,    SLOT(onDigitClicked())},
-        {"÷",     2, 3, 1, 1, K::Operator, SLOT(onOperatorClicked())},
+        {"7",     2, 0, 1, 1, K::Digit,    SLOT(on_digit_clicked())},
+        {"8",     2, 1, 1, 1, K::Digit,    SLOT(on_digit_clicked())},
+        {"9",     2, 2, 1, 1, K::Digit,    SLOT(on_digit_clicked())},
+        {"÷",     2, 3, 1, 1, K::Operator, SLOT(on_operator_clicked())},
 
-        {"4",     3, 0, 1, 1, K::Digit,    SLOT(onDigitClicked())},
-        {"5",     3, 1, 1, 1, K::Digit,    SLOT(onDigitClicked())},
-        {"6",     3, 2, 1, 1, K::Digit,    SLOT(onDigitClicked())},
-        {"×",     3, 3, 1, 1, K::Operator, SLOT(onOperatorClicked())},
+        {"4",     3, 0, 1, 1, K::Digit,    SLOT(on_digit_clicked())},
+        {"5",     3, 1, 1, 1, K::Digit,    SLOT(on_digit_clicked())},
+        {"6",     3, 2, 1, 1, K::Digit,    SLOT(on_digit_clicked())},
+        {"×",     3, 3, 1, 1, K::Operator, SLOT(on_operator_clicked())},
 
-        {"1",     4, 0, 1, 1, K::Digit,    SLOT(onDigitClicked())},
-        {"2",     4, 1, 1, 1, K::Digit,    SLOT(onDigitClicked())},
-        {"3",     4, 2, 1, 1, K::Digit,    SLOT(onDigitClicked())},
-        {"−",     4, 3, 1, 1, K::Operator, SLOT(onOperatorClicked())},
+        {"1",     4, 0, 1, 1, K::Digit,    SLOT(on_digit_clicked())},
+        {"2",     4, 1, 1, 1, K::Digit,    SLOT(on_digit_clicked())},
+        {"3",     4, 2, 1, 1, K::Digit,    SLOT(on_digit_clicked())},
+        {"−",     4, 3, 1, 1, K::Operator, SLOT(on_operator_clicked())},
 
-        {"0",     5, 0, 1, 2, K::Digit,    SLOT(onDigitClicked())},
-        {".",     5, 2, 1, 1, K::Digit,    SLOT(onDotClicked())},
-        {"+",     5, 3, 1, 1, K::Operator, SLOT(onOperatorClicked())},
+        {"0",     5, 0, 1, 2, K::Digit,    SLOT(on_digit_clicked())},
+        {".",     5, 2, 1, 1, K::Digit,    SLOT(on_dot_clicked())},
+        {"+",     5, 3, 1, 1, K::Operator, SLOT(on_operator_clicked())},
 
-        {"=",     6, 0, 1, 4, K::Equals,   SLOT(onEqualsClicked())},
+        {"=",     6, 0, 1, 4, K::Equals,   SLOT(on_equals_clicked())},
     };
 
     for (const B& b : buttons) {
-        auto* btn = makeButton(b.label, b.kind);
-        grid->addWidget(btn, b.row, b.col, b.rowSpan, b.colSpan);
+        auto* btn = make_button(b.label, b.kind);
+        grid->addWidget(btn, b.row, b.col, b.row_span, b.col_span);
         connect(btn, SIGNAL(clicked()), this, b.slot);
     }
 
     for (int c = 0; c < 4; ++c) grid->setColumnStretch(c, 1);
     for (int r = 0; r < 7; ++r) grid->setRowStretch(r, 1);
 
-    applyTheme();
+    apply_theme();
     resize(420, 640);
 }
 
-QPushButton* MainWindow::makeButton(const QString& text, ButtonKind kind) {
+QPushButton* MainWindow::make_button(const QString& text, ButtonKind kind) {
     auto* btn = new QPushButton(text, this);
     btn->setMinimumHeight(56);
     btn->setFocusPolicy(Qt::NoFocus);
@@ -115,7 +115,7 @@ QPushButton* MainWindow::makeButton(const QString& text, ButtonKind kind) {
     return btn;
 }
 
-void MainWindow::applyTheme() {
+void MainWindow::apply_theme() {
     const QString qss = R"(
         QWidget#central {
             background-color: #1e1e2e;
@@ -225,16 +225,16 @@ void MainWindow::applyTheme() {
     setStyleSheet(qss);
 }
 
-void MainWindow::appendText(const QString& text) {
-    expressionEdit_->setText(expressionEdit_->text() + text);
+void MainWindow::append_text(const QString& text) {
+    expression_edit_->setText(expression_edit_->text() + text);
 }
 
-void MainWindow::onDigitClicked() {
+void MainWindow::on_digit_clicked() {
     auto* btn = qobject_cast<QPushButton*>(sender());
-    if (btn) appendText(btn->text());
+    if (btn) append_text(btn->text());
 }
 
-void MainWindow::onOperatorClicked() {
+void MainWindow::on_operator_clicked() {
     auto* btn = qobject_cast<QPushButton*>(sender());
     if (!btn) return;
     QString t = btn->text();
@@ -242,45 +242,45 @@ void MainWindow::onOperatorClicked() {
     if (t == "÷") internal = "/";
     else if (t == "×") internal = "*";
     else if (t == "−") internal = "-";
-    appendText(internal);
+    append_text(internal);
 }
 
-void MainWindow::onFunctionClicked() {
+void MainWindow::on_function_clicked() {
     auto* btn = qobject_cast<QPushButton*>(sender());
-    if (btn) appendText(btn->text() + "(");
+    if (btn) append_text(btn->text() + "(");
 }
 
-void MainWindow::onParenClicked() {
+void MainWindow::on_paren_clicked() {
     auto* btn = qobject_cast<QPushButton*>(sender());
-    if (btn) appendText(btn->text());
+    if (btn) append_text(btn->text());
 }
 
-void MainWindow::onDotClicked() {
-    appendText(".");
+void MainWindow::on_dot_clicked() {
+    append_text(".");
 }
 
-void MainWindow::onClearClicked() {
-    expressionEdit_->clear();
-    resultLabel_->setText("");
-    historyLabel_->setText("");
-    resultLabel_->setProperty("error", false);
-    resultLabel_->style()->unpolish(resultLabel_);
-    resultLabel_->style()->polish(resultLabel_);
+void MainWindow::on_clear_clicked() {
+    expression_edit_->clear();
+    result_label_->setText("");
+    history_label_->setText("");
+    result_label_->setProperty("error", false);
+    result_label_->style()->unpolish(result_label_);
+    result_label_->style()->polish(result_label_);
 }
 
-void MainWindow::onBackspaceClicked() {
-    QString t = expressionEdit_->text();
-    if (!t.isEmpty()) expressionEdit_->setText(t.left(t.length() - 1));
+void MainWindow::on_backspace_clicked() {
+    QString t = expression_edit_->text();
+    if (!t.isEmpty()) expression_edit_->setText(t.left(t.length() - 1));
 }
 
-void MainWindow::onEqualsClicked() {
+void MainWindow::on_equals_clicked() {
     compute();
 }
 
 void MainWindow::compute() {
-    QString expr = expressionEdit_->text().trimmed();
+    QString expr = expression_edit_->text().trimmed();
     if (expr.isEmpty()) {
-        resultLabel_->setText("");
+        result_label_->setText("");
         return;
     }
     try {
@@ -292,16 +292,16 @@ void MainWindow::compute() {
         } else {
             out = QString::number(r, 'g', 12);
         }
-        historyLabel_->setText(expr + " =");
-        resultLabel_->setText(out);
-        resultLabel_->setProperty("error", false);
+        history_label_->setText(expr + " =");
+        result_label_->setText(out);
+        result_label_->setProperty("error", false);
     } catch (const std::exception& e) {
-        historyLabel_->setText(expr);
-        resultLabel_->setText(QString::fromStdString(e.what()));
-        resultLabel_->setProperty("error", true);
+        history_label_->setText(expr);
+        result_label_->setText(QString::fromStdString(e.what()));
+        result_label_->setProperty("error", true);
     }
-    resultLabel_->style()->unpolish(resultLabel_);
-    resultLabel_->style()->polish(resultLabel_);
+    result_label_->style()->unpolish(result_label_);
+    result_label_->style()->polish(result_label_);
 }
 
 void MainWindow::keyPressEvent(QKeyEvent* event) {
@@ -312,21 +312,21 @@ void MainWindow::keyPressEvent(QKeyEvent* event) {
         return;
     }
     if (key == Qt::Key_Backspace) {
-        onBackspaceClicked();
+        on_backspace_clicked();
         return;
     }
     if (key == Qt::Key_Escape) {
-        onClearClicked();
+        on_clear_clicked();
         return;
     }
     if (!text.isEmpty()) {
         QChar c = text.at(0);
         if (c.isDigit() || c == '.' || c == '+' || c == '-' || c == '*' || c == '/' || c == '(' || c == ')') {
-            appendText(text);
+            append_text(text);
             return;
         }
         if (c.isLetter()) {
-            appendText(text);
+            append_text(text);
             return;
         }
     }

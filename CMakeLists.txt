@@ -15,12 +15,12 @@ find_package(Qt6 COMPONENTS Widgets REQUIRED)
 
 add_executable(calculator
     src/main.cpp
-    src/MainWindow.cpp
-    src/MainWindow.h
-    src/Parser.cpp
-    src/Parser.h
-    src/Evaluator.cpp
-    src/Evaluator.h
+    src/main_window.cpp
+    src/main_window.h
+    src/parser.cpp
+    src/parser.h
+    src/evaluator.cpp
+    src/evaluator.h
 )
 
 target_include_directories(calculator PRIVATE src)
@@ -34,6 +34,6 @@ if(APPLE)
 endif()
 
 enable_testing()
-add_executable(parser_tests tests/parser_tests.cpp src/Parser.cpp src/Evaluator.cpp)
+add_executable(parser_tests tests/parser_tests.cpp src/parser.cpp src/evaluator.cpp)
 target_include_directories(parser_tests PRIVATE src)
 add_test(NAME parser_tests COMMAND parser_tests)

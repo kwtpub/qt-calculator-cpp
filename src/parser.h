@@ -26,11 +26,11 @@ public:
 class Parser {
 public:
     std::vector<Token> tokenize(const std::string& expression) const;
-    std::vector<Token> toRPN(const std::vector<Token>& tokens) const;
+    std::vector<Token> to_rpn(const std::vector<Token>& tokens) const;
     std::vector<Token> parse(const std::string& expression) const;
 
 private:
     static int precedence(const std::string& op);
-    static bool isRightAssociative(const std::string& op);
-    static bool isFunction(const std::string& name);
+    static bool is_right_associative(const std::string& op);
+    static bool is_function(const std::string& name);
 };

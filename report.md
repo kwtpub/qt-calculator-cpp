@@ -109,7 +109,7 @@
                            ▼
                   ┌─────────────────┐
                   │     Parser      │   ← токенизация + Shunting-yard
-                  │ tokenize, toRPN │
+                  │ tokenize, to_rpn │
                   └────────┬────────┘
                            │ массив токенов в RPN
                            ▼
@@ -130,7 +130,7 @@
 
 > _Заполняет: Загорный Тимофей Максимович_
 
-Парсер реализован в файлах `src/Parser.h` и `src/Parser.cpp`. Состоит из двух методов:
+Парсер реализован в файлах `src/parser.h` и `src/parser.cpp`. Состоит из двух методов:
 
 **1. `tokenize(expression)`** — преобразует строку в массив токенов.
 
@@ -142,7 +142,7 @@
 
 **Унарный минус** определяется по контексту: если `-` стоит в начале выражения, после оператора, после `(` или после имени функции — это унарный минус (`u-`), иначе — бинарное вычитание.
 
-**2. `toRPN(tokens)`** — преобразование в обратную польскую запись по алгоритму Дейкстры (Shunting-yard).
+**2. `to_rpn(tokens)`** — преобразование в обратную польскую запись по алгоритму Дейкстры (Shunting-yard).
 
 Таблица приоритетов:
 | Оператор | Приоритет | Ассоциативность |
@@ -167,7 +167,7 @@
 
 > _Заполняет: Калинин Кирилл Евгеньевич_
 
-Вычислитель реализован в `src/Evaluator.cpp`. Алгоритм классический стековый:
+Вычислитель реализован в `src/evaluator.cpp`. Алгоритм классический стековый:
 
 ```
 для каждого токена в RPN:
@@ -224,13 +224,13 @@
 
 ```cpp
 void MainWindow::compute() {
-    QString expr = expressionEdit_->text();
+    QString expr = expression_edit_->text();
     try {
         Evaluator ev;
         double r = ev.evaluate(expr.toStdString());
-        resultLabel_->setText(QString::number(r, 'g', 12));
+        result_label_->setText(QString::number(r, 'g', 12));
     } catch (const std::exception& e) {
-        resultLabel_->setText(QString("Ошибка: %1").arg(e.what()));
+        result_label_->setText(QString("Ошибка: %1").arg(e.what()));
     }
 }
 ```

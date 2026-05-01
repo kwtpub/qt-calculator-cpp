@@ -1,4 +1,4 @@
-#include "Evaluator.h"
+#include "evaluator.h"
 
 #include <cmath>
 #include <stack>

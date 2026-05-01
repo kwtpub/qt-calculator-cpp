@@ -34,9 +34,9 @@
 | ФИО | Роль | Что делать |
 |---|---|---|
 | **Гаценко А. О.** | Тимлид, интеграция | Сборка, помощь команде, финальный отчёт |
-| **Загорный Т. М.** | Парсер | Разбираться в `Parser.{h,cpp}`, писать раздел отчёта |
-| **Калинин К. Е.** | Вычислитель + ошибки | Разбираться в `Evaluator.{h,cpp}`, писать раздел отчёта |
-| **Михалёв К. Д.** | GUI | Разбираться в `MainWindow.{h,cpp}`, писать раздел отчёта |
+| **Загорный Т. М.** | Парсер | Разбираться в `parser.{h,cpp}`, писать раздел отчёта |
+| **Калинин К. Е.** | Вычислитель + ошибки | Разбираться в `evaluator.{h,cpp}`, писать раздел отчёта |
+| **Михалёв К. Д.** | GUI | Разбираться в `main_window.{h,cpp}`, писать раздел отчёта |
 | **Рыбин Т. В.** | Тестирование | Запустить программу, сделать 16 скриншотов |
 | **Шеянов Я. В.** | Отчёт | Собрать `report.md`, нарисовать блок-схемы |
 
@@ -156,12 +156,12 @@ qt-calculator-cpp/
 │
 ├── src/                    # исходный код программы
 │   ├── main.cpp            # точка входа: создаёт QApplication и MainWindow
-│   ├── MainWindow.h        # объявление класса главного окна
-│   ├── MainWindow.cpp      # реализация GUI: кнопки, layout, обработчики
-│   ├── Parser.h            # объявление парсера и типов токенов
-│   ├── Parser.cpp          # реализация парсера: tokenize + Shunting-yard
-│   ├── Evaluator.h         # объявление вычислителя
-│   └── Evaluator.cpp       # реализация: вычисление RPN на стеке
+│   ├── main_window.h        # объявление класса главного окна
+│   ├── main_window.cpp      # реализация GUI: кнопки, layout, обработчики
+│   ├── parser.h            # объявление парсера и типов токенов
+│   ├── parser.cpp          # реализация парсера: tokenize + Shunting-yard
+│   ├── evaluator.h         # объявление вычислителя
+│   └── evaluator.cpp       # реализация: вычисление RPN на стеке
 │
 ├── tests/
 │   └── parser_tests.cpp    # 41 юнит-тест парсера и вычислителя
@@ -190,7 +190,7 @@ qt-calculator-cpp/
    │              Parser                         │
    │   1. tokenize: строка → массив токенов      │
    │      "2+3*4" → [2] [+] [3] [*] [4]          │
-   │   2. toRPN:   токены → обратная польская    │
+   │   2. to_rpn:   токены → обратная польская    │
    │      [2] [+] [3] [*] [4] → [2] [3] [4] [*] [+] │
    └─────────────────────────────┬───────────────┘
                                  │ массив токенов в RPN
@@ -216,11 +216,11 @@ qt-calculator-cpp/
 
 ## 7. Парсер. Этап 1 — токенизация
 
-**Файл:** `src/Parser.cpp`, метод `tokenize()`.
+**Файл:** `src/parser.cpp`, метод `tokenize()`.
 
 **Задача:** превратить строку (например `"2+3*sqrt(16)"`) в массив **токенов** — атомов, с которыми удобно работать дальше.
 
-### Типы токенов (см. `Parser.h`)
+### Типы токенов (см. `parser.h`)
 
 ```cpp
 enum class TokenType {
@@ -293,7 +293,7 @@ if (c == '-') {
 
 ## 8. Парсер. Этап 2 — Shunting-yard и RPN
 
-**Файл:** `src/Parser.cpp`, метод `toRPN()`.
+**Файл:** `src/parser.cpp`, метод `to_rpn()`.
 
 ### Что такое RPN (обратная польская запись)
 
@@ -356,7 +356,7 @@ RPN: `2 3 4 * +`
 
 ## 9. Вычислитель RPN
 
-**Файл:** `src/Evaluator.cpp`, метод `evaluate()`.
+**Файл:** `src/evaluator.cpp`, метод `evaluate()`.
 
 Алгоритм максимально прост:
 
@@ -415,10 +415,10 @@ double r = a OP b;
 ```cpp
 try {
     double r = ev.evaluate(expr.toStdString());
-    resultLabel_->setText(QString::number(r, 'g', 12));
+    result_label_->setText(QString::number(r, 'g', 12));
 } catch (const std::exception& e) {
-    resultLabel_->setText(QString::fromStdString(e.what()));
-    resultLabel_->setProperty("error", true);
+    result_label_->setText(QString::fromStdString(e.what()));
+    result_label_->setProperty("error", true);
 }
 ```
 
@@ -443,7 +443,7 @@ try {
 
 ## 11. GUI: устройство Qt
 
-**Файлы:** `src/MainWindow.h`, `src/MainWindow.cpp`, `src/main.cpp`.
+**Файлы:** `src/main_window.h`, `src/main_window.cpp`, `src/main.cpp`.
 
 ### Точка входа
 
@@ -482,20 +482,20 @@ QMainWindow (MainWindow)
 Это ключевой механизм Qt. Когда пользователь кликает кнопку, Qt **испускает сигнал** `clicked()`. Мы подключаем этот сигнал к нашему **слоту** (методу класса):
 
 ```cpp
-connect(btn, SIGNAL(clicked()), this, SLOT(onDigitClicked()));
+connect(btn, SIGNAL(clicked()), this, SLOT(on_digit_clicked()));
 //      ^источник  ^сигнал           ^приёмник  ^слот
 ```
 
-После этого: пользователь нажал `btn` → Qt автоматически вызвал `onDigitClicked()`.
+После этого: пользователь нажал `btn` → Qt автоматически вызвал `on_digit_clicked()`.
 
 ### Как обработчик узнаёт, какая кнопка нажата
 
 Внутри слота используем `sender()`:
 
 ```cpp
-void MainWindow::onDigitClicked() {
+void MainWindow::on_digit_clicked() {
     auto* btn = qobject_cast<QPushButton*>(sender());
-    if (btn) appendText(btn->text());     // "5", "7", etc.
+    if (btn) append_text(btn->text());     // "5", "7", etc.
 }
 ```
 
@@ -503,14 +503,14 @@ void MainWindow::onDigitClicked() {
 
 ### Отображение операторов
 
-В коде хранятся ASCII-символы (`/`, `*`, `-`), но кнопки показывают красивые символы (`÷`, `×`, `−`). Маппинг — в `onOperatorClicked()`:
+В коде хранятся ASCII-символы (`/`, `*`, `-`), но кнопки показывают красивые символы (`÷`, `×`, `−`). Маппинг — в `on_operator_clicked()`:
 
 ```cpp
 QString internal = t;
 if (t == "÷") internal = "/";
 else if (t == "×") internal = "*";
 else if (t == "−") internal = "-";
-appendText(internal);
+append_text(internal);
 ```
 
 В строку выражения попадает ASCII-вариант — парсер понимает только его.
@@ -522,8 +522,8 @@ appendText(internal);
 ```cpp
 void MainWindow::keyPressEvent(QKeyEvent* event) {
     if (key == Qt::Key_Return) compute();         // Enter = "="
-    else if (key == Qt::Key_Escape) onClearClicked();  // Esc = "C"
-    else if (key == Qt::Key_Backspace) onBackspaceClicked();
+    else if (key == Qt::Key_Escape) on_clear_clicked();  // Esc = "C"
+    else if (key == Qt::Key_Backspace) on_backspace_clicked();
     // цифры и операторы — добавить в строку
 }
 ```
@@ -574,12 +574,12 @@ QPushButton[kind="digit"]:hover {
 
 ### Обновление стиля по событию (ошибка)
 
-Когда выражение даёт ошибку, мы выставляем `error=true` на `resultLabel_`. Чтобы Qt **перерисовал** виджет с новым стилем, нужно явно вызвать `unpolish` + `polish`:
+Когда выражение даёт ошибку, мы выставляем `error=true` на `result_label_`. Чтобы Qt **перерисовал** виджет с новым стилем, нужно явно вызвать `unpolish` + `polish`:
 
 ```cpp
-resultLabel_->setProperty("error", true);
-resultLabel_->style()->unpolish(resultLabel_);
-resultLabel_->style()->polish(resultLabel_);
+result_label_->setProperty("error", true);
+result_label_->style()->unpolish(result_label_);
+result_label_->style()->polish(result_label_);
 ```
 
 Без этого Qt будет кешировать старый стиль и цвет не сменится.
@@ -592,7 +592,7 @@ resultLabel_->style()->polish(resultLabel_);
 
 ### 1. Зарегистрировать имя в парсере
 
-`src/Parser.cpp`, метод `isFunction()`:
+`src/parser.cpp`, метод `is_function()`:
 
 ```cpp
 static const std::unordered_set<std::string> funcs = {"ln", "exp", "sqrt", "abs", "cos"};
@@ -600,7 +600,7 @@ static const std::unordered_set<std::string> funcs = {"ln", "exp", "sqrt", "abs"
 
 ### 2. Реализовать вычисление
 
-`src/Evaluator.cpp`, в обработке `TokenType::Function`:
+`src/evaluator.cpp`, в обработке `TokenType::Function`:
 
 ```cpp
 } else if (t.text == "cos") {
@@ -610,10 +610,10 @@ static const std::unordered_set<std::string> funcs = {"ln", "exp", "sqrt", "abs"
 
 ### 3. Добавить кнопку
 
-`src/MainWindow.cpp`, в массив `buttons`:
+`src/main_window.cpp`, в массив `buttons`:
 
 ```cpp
-{"cos", 1, 4, 1, 1, K::Function, SLOT(onFunctionClicked())},
+{"cos", 1, 4, 1, 1, K::Function, SLOT(on_function_clicked())},
 ```
 
 (не забудь поправить layout — добавить колонку или передвинуть существующие кнопки).
@@ -632,12 +632,12 @@ check_eq("cos(0)", 1);
 
 ## 14. Как добавить новую кнопку
 
-Все кнопки описаны массивом в `MainWindow.cpp`:
+Все кнопки описаны массивом в `main_window.cpp`:
 
 ```cpp
 struct B { QString label; int row; int col; int rowSpan; int colSpan; K kind; const char* slot; };
 QList<B> buttons = {
-    {"C", 0, 0, 1, 1, K::Action, SLOT(onClearClicked())},
+    {"C", 0, 0, 1, 1, K::Action, SLOT(on_clear_clicked())},
     ...
 };
 ```
@@ -709,7 +709,7 @@ Parser p;
 auto tokens = p.tokenize(expr.toStdString());
 for (const auto& t : tokens) std::cout << t.text << " ";
 std::cout << std::endl;
-auto rpn = p.toRPN(tokens);
+auto rpn = p.to_rpn(tokens);
 for (const auto& t : rpn) std::cout << t.text << " ";
 std::cout << std::endl;
 ```
@@ -722,9 +722,9 @@ std::cout << std::endl;
 
 ### Q: Почему в коде `*`, `/`, `-`, а на кнопках `×`, `÷`, `−`?
 
-Парсер работает с ASCII (быстро, надёжно). Юникод-символы — только для красоты на кнопках. Маппинг см. в `onOperatorClicked()`.
+Парсер работает с ASCII (быстро, надёжно). Юникод-символы — только для красоты на кнопках. Маппинг см. в `on_operator_clicked()`.
 
-### Q: Что такое `Q_OBJECT` в `MainWindow.h`?
+### Q: Что такое `Q_OBJECT` в `main_window.h`?
 
 Макрос Qt, обязательный для классов с сигналами/слотами. Без него `connect()` не будет работать. Не удаляй.
 

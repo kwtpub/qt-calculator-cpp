@@ -1,4 +1,4 @@
-#include "Parser.h"
+#include "parser.h"
 
 #include <cctype>
 #include <stack>
@@ -11,11 +11,11 @@ int Parser::precedence(const std::string& op) {
     return 0;
 }
 
-bool Parser::isRightAssociative(const std::string& op) {
+bool Parser::is_right_associative(const std::string& op) {
     return op == "u-";
 }
 
-bool Parser::isFunction(const std::string& name) {
+bool Parser::is_function(const std::string& name) {
     static const std::unordered_set<std::string> funcs = {"ln", "exp", "sqrt", "abs"};
     return funcs.count(name) > 0;
 }
@@ -35,11 +35,11 @@ std::vector<Token> Parser::tokenize(const std::string& expression) const {
 
         if (std::isdigit(static_cast<unsigned char>(c)) || c == '.') {
             size_t start = i;
-            bool hasDot = false;
+            bool has_dot = false;
             while (i < n && (std::isdigit(static_cast<unsigned char>(expression[i])) || expression[i] == '.')) {
                 if (expression[i] == '.') {
-                    if (hasDot) throw ParseError("Некорректное число: две точки");
-                    hasDot = true;
+                    if (has_dot) throw ParseError("Некорректное число: две точки");
+                    has_dot = true;
                 }
                 ++i;
             }
@@ -54,7 +54,7 @@ std::vector<Token> Parser::tokenize(const std::string& expression) const {
             size_t start = i;
             while (i < n && std::isalpha(static_cast<unsigned char>(expression[i]))) ++i;
             std::string name = expression.substr(start, i - start);
-            if (!isFunction(name)) throw ParseError("Неизвестная функция: " + name);
+            if (!is_function(name)) throw ParseError("Неизвестная функция: " + name);
             tokens.push_back({TokenType::Function, name, 0.0});
             continue;
         }
@@ -102,7 +102,7 @@ std::vector<Token> Parser::tokenize(const std::string& expression) const {
     return tokens;
 }
 
-std::vector<Token> Parser::toRPN(const std::vector<Token>& tokens) const {
+std::vector<Token> Parser::to_rpn(const std::vector<Token>& tokens) const {
     std::vector<Token> output;
     std::stack<Token> ops;
 
@@ -117,10 +117,10 @@ std::vector<Token> Parser::toRPN(const std::vector<Token>& tokens) const {
             case TokenType::Operator: {
                 while (!ops.empty() && ops.top().type != TokenType::LeftParen) {
                     const Token& top = ops.top();
-                    bool topIsFunc = top.type == TokenType::Function;
-                    bool higher = topIsFunc || precedence(top.text) > precedence(t.text);
-                    bool equalLeftAssoc = !topIsFunc && precedence(top.text) == precedence(t.text) && !isRightAssociative(t.text);
-                    if (higher || equalLeftAssoc) {
+                    bool top_is_func = top.type == TokenType::Function;
+                    bool higher = top_is_func || precedence(top.text) > precedence(t.text);
+                    bool equal_left_assoc = !top_is_func && precedence(top.text) == precedence(t.text) && !is_right_associative(t.text);
+                    if (higher || equal_left_assoc) {
                         output.push_back(top);
                         ops.pop();
                     } else {
@@ -134,17 +134,17 @@ std::vector<Token> Parser::toRPN(const std::vector<Token>& tokens) const {
                 ops.push(t);
                 break;
             case TokenType::RightParen: {
-                bool foundLeft = false;
+                bool found_left = false;
                 while (!ops.empty()) {
                     if (ops.top().type == TokenType::LeftParen) {
                         ops.pop();
-                        foundLeft = true;
+                        found_left = true;
                         break;
                     }
                     output.push_back(ops.top());
                     ops.pop();
                 }
-                if (!foundLeft) throw ParseError("Несбалансированные скобки: лишняя ')'");
+                if (!found_left) throw ParseError("Несбалансированные скобки: лишняя ')'");
                 if (!ops.empty() && ops.top().type == TokenType::Function) {
                     output.push_back(ops.top());
                     ops.pop();
@@ -164,5 +164,5 @@ std::vector<Token> Parser::toRPN(const std::vector<Token>& tokens) const {
 }
 
 std::vector<Token> Parser::parse(const std::string& expression) const {
-    return toRPN(tokenize(expression));
+    return to_rpn(tokenize(expression));
 }

@@ -1,5 +1,5 @@
-#include "Parser.h"
-#include "Evaluator.h"
+#include "parser.h"
+#include "evaluator.h"
 
 #include <cmath>
 #include <cstdio>
