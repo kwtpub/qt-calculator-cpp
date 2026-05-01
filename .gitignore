@@ -1,0 +1,29 @@
+# Build artifacts
+build/
+cmake-build-*/
+out/
+
+# IDE
+.vscode/
+.idea/
+*.user
+CMakeUserPresets.json
+
+# Qt
+*.qmlc
+*.jsc
+moc_*.cpp
+moc_*.h
+qrc_*.cpp
+ui_*.h
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Compiled
+*.o
+*.obj
+*.exe
+*.app
+*.dSYM/
