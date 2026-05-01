@@ -5,6 +5,9 @@ namespace ui {
 const std::vector<ButtonSpec>& button_specs() {
     using K = ButtonKind;
     using A = ButtonAction;
+    // Раскладка 7×4. Кнопка "0" растянута на 2 колонки, "=" — на всю ширину.
+    // Юникод-символы ÷ × − на кнопках конвертируются в ASCII /, *, -
+    // через format::operator_to_internal перед попаданием в выражение.
     static const std::vector<ButtonSpec> specs = {
         {"C",     0, 0, 1, 1, K::Action,   A::Clear},
         {"⌫",    0, 1, 1, 1, K::Action,   A::Backspace},

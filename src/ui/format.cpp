@@ -12,6 +12,8 @@ QString operator_to_internal(const QString& display) {
 }
 
 QString format_result(double r) {
+    // Если число фактически целое и помещается в long long — печатаем как целое.
+    // Граница 1e15 — за пределами этого double теряет точность для целых.
     if (r == static_cast<long long>(r) && std::abs(r) < 1e15) {
         return QString::number(static_cast<long long>(r));
     }

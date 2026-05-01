@@ -2,6 +2,13 @@
 
 namespace ui::theme {
 
+// Селекторы по objectName (#central, #displayPanel, ...) и по динамическому
+// свойству kind="digit"/"operator"/... ставится в make_button.
+//
+// Палитра — Catppuccin Mocha:
+//   #1e1e2e — фон окна, #181825 — фон дисплея, #cdd6f4 — основной текст,
+//   #a6e3a1 — зелёный (успех), #f38ba8 — красный (ошибка),
+//   #f9e2af — жёлтый (операторы), #89b4fa — синий (функции).
 QString stylesheet() {
     return R"(
         QWidget#central {

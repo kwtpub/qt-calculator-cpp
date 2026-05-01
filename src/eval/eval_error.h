@@ -1,5 +1,9 @@
 #pragma once
 
+// Исключение для ошибок на этапе вычисления (математика).
+// Бросается из functions, operators и evaluator.
+// Для синтаксических ошибок есть отдельный ParseError в parser/.
+
 #include <stdexcept>
 #include <string>
 

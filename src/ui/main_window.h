@@ -1,5 +1,10 @@
 #pragma once
 
+// Главное окно калькулятора.
+// Класс наследуется от QMainWindow — этого требует Qt (Q_OBJECT + сигналы/слоты).
+// Логика тонкая: связывает виджеты с данными из button_layout, делегирует
+// вычисление в eval::evaluate, форматирование — в ui::format.
+
 #include "ui/button_layout.h"
 
 #include <QMainWindow>
@@ -17,9 +22,13 @@ public:
     explicit MainWindow(QWidget* parent = nullptr);
 
 protected:
+    // Перехват клавиатуры: Enter = "=", Esc = "C", Backspace = ⌫,
+    // цифры/операторы/буквы — добавляются в строку.
     void keyPressEvent(QKeyEvent* event) override;
 
 private slots:
+    // Единый обработчик кликов кнопок. action_index — индекс в button_specs().
+    // Слот привязан через QSignalMapper, поэтому отдельные слоты не нужны.
     void handle_action(int action_index);
 
 private:
@@ -31,6 +40,7 @@ private:
     void build_buttons(class QGridLayout* grid);
     QPushButton* make_button(const ButtonSpec& spec);
 
+    // Базовые операции над дисплеем, дёргаются из handle_action и keyPressEvent.
     void append(const QString& text);
     void clear_display();
     void backspace();

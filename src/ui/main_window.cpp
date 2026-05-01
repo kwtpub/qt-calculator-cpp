@@ -20,27 +20,31 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
     resize(420, 640);
 }
 
+// Создание иерархии виджетов: дисплей сверху + сетка кнопок снизу.
 void MainWindow::build_ui() {
     auto* central = new QWidget(this);
-    central->setObjectName("central");
+    central->setObjectName("central");           // имя нужно для QSS-селектора #central
     setCentralWidget(central);
 
     auto* main_layout = new QVBoxLayout(central);
     main_layout->setContentsMargins(20, 20, 20, 20);
     main_layout->setSpacing(12);
 
+    // Панель дисплея — отдельный виджет, чтобы у неё был свой цвет и скругление.
     auto* display_panel = new QWidget(central);
     display_panel->setObjectName("displayPanel");
     auto* display_layout = new QVBoxLayout(display_panel);
     display_layout->setContentsMargins(20, 20, 20, 20);
     display_layout->setSpacing(6);
 
+    // Серая строка истории сверху ("2+3 =").
     history_label_ = new QLabel("", display_panel);
     history_label_->setObjectName("historyLabel");
     history_label_->setAlignment(Qt::AlignRight);
     history_label_->setMinimumHeight(20);
     display_layout->addWidget(history_label_);
 
+    // Поле ввода. Можно править как с клавиатуры, так и кнопками.
     expression_edit_ = new QLineEdit(display_panel);
     expression_edit_->setObjectName("expressionEdit");
     expression_edit_->setPlaceholderText("0");
@@ -48,6 +52,7 @@ void MainWindow::build_ui() {
     expression_edit_->setFrame(false);
     display_layout->addWidget(expression_edit_);
 
+    // Большая зелёная (или красная при ошибке) строка результата.
     result_label_ = new QLabel("", display_panel);
     result_label_->setObjectName("resultLabel");
     result_label_->setAlignment(Qt::AlignRight);
@@ -62,10 +67,13 @@ void MainWindow::build_ui() {
 
     build_buttons(grid);
 
+    // Растяжки 1:1 — чтобы все колонки/строки делили пространство поровну.
     for (int c = 0; c < grid_cols; ++c) grid->setColumnStretch(c, 1);
     for (int r = 0; r < grid_rows; ++r) grid->setRowStretch(r, 1);
 }
 
+// Создаём кнопки по описанию из button_specs() и подключаем их к одному слоту
+// через QSignalMapper — он передаёт индекс кнопки в handle_action.
 void MainWindow::build_buttons(QGridLayout* grid) {
     auto* mapper = new QSignalMapper(this);
     const auto& specs = button_specs();
@@ -78,10 +86,12 @@ void MainWindow::build_buttons(QGridLayout* grid) {
     connect(mapper, &QSignalMapper::mappedInt, this, &MainWindow::handle_action);
 }
 
+// Создаёт QPushButton по спецификации и проставляет ему свойство kind,
+// по которому QSS подбирает цвета (digit/operator/function/action/equals).
 QPushButton* MainWindow::make_button(const ButtonSpec& spec) {
     auto* btn = new QPushButton(spec.label, this);
     btn->setMinimumHeight(56);
-    btn->setFocusPolicy(Qt::NoFocus);
+    btn->setFocusPolicy(Qt::NoFocus);                 // фокус не должен бегать по кнопкам
     btn->setCursor(Qt::PointingHandCursor);
     const char* kind_str = "digit";
     switch (spec.kind) {
@@ -95,12 +105,13 @@ QPushButton* MainWindow::make_button(const ButtonSpec& spec) {
     return btn;
 }
 
+// Диспатч: смотрим тип действия в спецификации кнопки и вызываем нужный метод.
 void MainWindow::handle_action(int action_index) {
     const auto& spec = button_specs()[static_cast<size_t>(action_index)];
     switch (spec.action) {
         case ButtonAction::Digit:     append(spec.label);                              break;
         case ButtonAction::Operator:  append(format::operator_to_internal(spec.label)); break;
-        case ButtonAction::Function:  append(spec.label + "(");                        break;
+        case ButtonAction::Function:  append(spec.label + "(");                        break;  // удобство: сразу с открывающей
         case ButtonAction::Paren:     append(spec.label);                              break;
         case ButtonAction::Dot:       append(".");                                     break;
         case ButtonAction::Clear:     clear_display();                                 break;
@@ -124,6 +135,8 @@ void MainWindow::backspace() {
     if (!t.isEmpty()) expression_edit_->setText(t.left(t.length() - 1));
 }
 
+// Главный сценарий: парсим выражение и считаем.
+// Все исключения (ParseError, EvalError) ловим одним catch — у них общий базовый класс.
 void MainWindow::compute() {
     QString expr = expression_edit_->text().trimmed();
     if (expr.isEmpty()) {
@@ -140,6 +153,8 @@ void MainWindow::compute() {
     }
 }
 
+// Показать результат и переключить визуальное состояние label'а.
+// unpolish/polish нужны, чтобы Qt пересчитал стиль после смены свойства error.
 void MainWindow::show_result(const QString& text, bool is_error) {
     result_label_->setText(text);
     result_label_->setProperty("error", is_error);
@@ -153,6 +168,7 @@ void MainWindow::keyPressEvent(QKeyEvent* event) {
     if (key == Qt::Key_Return || key == Qt::Key_Enter || key == Qt::Key_Equal) { compute();        return; }
     if (key == Qt::Key_Backspace)                                               { backspace();      return; }
     if (key == Qt::Key_Escape)                                                  { clear_display();  return; }
+    // Цифры, операторы, скобки, точка, буквы (для функций) — добавляем в строку.
     if (!text.isEmpty()) {
         QChar c = text.at(0);
         if (c.isDigit() || c == '.' || c == '+' || c == '-' || c == '*' || c == '/' || c == '(' || c == ')' || c.isLetter()) {
@@ -160,6 +176,7 @@ void MainWindow::keyPressEvent(QKeyEvent* event) {
             return;
         }
     }
+    // Всё остальное (стрелки, Tab, ...) — стандартная обработка.
     QMainWindow::keyPressEvent(event);
 }
 
