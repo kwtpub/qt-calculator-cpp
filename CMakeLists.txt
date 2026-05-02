@@ -13,24 +13,10 @@ endif()
 
 find_package(Qt6 COMPONENTS Widgets REQUIRED)
 
+# Парсер + вычислитель — один модуль (рекурсивный спуск).
 set(PARSER_SOURCES
-    src/parser/tokenizer.cpp
-    src/parser/tokenizer.h
-    src/parser/shunting_yard.cpp
-    src/parser/shunting_yard.h
-    src/parser/parser.h
-    src/parser/parse_error.h
-    src/parser/token.h
-)
-
-set(EVAL_SOURCES
-    src/eval/functions.cpp
-    src/eval/functions.h
-    src/eval/operators.cpp
-    src/eval/operators.h
-    src/eval/evaluator.cpp
-    src/eval/evaluator.h
-    src/eval/eval_error.h
+    src/parser.cpp
+    src/parser.h
 )
 
 set(UI_SOURCES
@@ -47,7 +33,6 @@ set(UI_SOURCES
 add_executable(calculator
     src/main.cpp
     ${PARSER_SOURCES}
-    ${EVAL_SOURCES}
     ${UI_SOURCES}
 )
 
@@ -65,7 +50,6 @@ enable_testing()
 add_executable(parser_tests
     tests/parser_tests.cpp
     ${PARSER_SOURCES}
-    ${EVAL_SOURCES}
 )
 target_include_directories(parser_tests PRIVATE src)
 add_test(NAME parser_tests COMMAND parser_tests)

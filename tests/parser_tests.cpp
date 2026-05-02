@@ -6,7 +6,7 @@
 //   check_eq(expr, expected)    — выражение должно дать число
 //   check_throws(expr, reason)  — выражение должно бросить исключение
 
-#include "eval/evaluator.h"
+#include "parser.h"
 
 #include <cmath>
 #include <cstdio>
@@ -17,7 +17,7 @@ static int failed = 0;
 
 static void check_eq(const std::string& expr, double expected, double tol = 1e-9) {
     try {
-        double r = eval::evaluate(expr);
+        double r = calc::evaluate(expr);
         if (std::fabs(r - expected) <= tol) {
             ++passed;
             std::printf("[OK]   %s = %.12g\n", expr.c_str(), r);
@@ -33,7 +33,7 @@ static void check_eq(const std::string& expr, double expected, double tol = 1e-9
 
 static void check_throws(const std::string& expr, const std::string& reason) {
     try {
-        double r = eval::evaluate(expr);
+        double r = calc::evaluate(expr);
         ++failed;
         std::printf("[FAIL] %s should throw (%s), got %.12g\n", expr.c_str(), reason.c_str(), r);
     } catch (const std::exception&) {

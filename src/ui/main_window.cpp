@@ -7,7 +7,7 @@
 #include "ui/main_window.h"
 #include "ui/theme.h"        // для stylesheet() — QSS-палитры
 #include "ui/format.h"       // operator_to_internal, format_result
-#include "eval/evaluator.h"  // eval::evaluate — собственно вычисление
+#include "parser.h"          // calc::evaluate — рекурсивный спуск
 
 // Qt-зависимости, нужные ТОЛЬКО внутри реализации.
 #include <QGridLayout>       // сетка для кнопок
@@ -216,8 +216,8 @@ void MainWindow::compute() {
     }
     try {
         // toStdString() переводит QString в std::string (UTF-8).
-        // eval::evaluate сам внутри вызывает токенизатор + shunting_yard.
-        double r = eval::evaluate(expr.toStdString());
+        // calc::evaluate реализован рекурсивным спуском (см. src/parser.cpp).
+        double r = calc::evaluate(expr.toStdString());
 
         // Успех: в истории показываем "2+3 =", в результате — число.
         history_label_->setText(expr + " =");
