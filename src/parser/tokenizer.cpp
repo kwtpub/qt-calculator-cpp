@@ -57,9 +57,31 @@ static Token read_number(const std::string& expression, size_t& i) {
     // Защита от случая ".": одна точка без цифр — это не число.
     if (num == ".") throw ParseError("Некорректное число: одиночная точка");
 
-    // std::stod парсит строку в double. Бросит исключение, если внутри
-    // что-то совсем плохое, но мы уже отфильтровали все странные случаи.
-    return {TokenType::Number, num, std::stod(num)};
+    // Парсим число вручную, ВНЕ зависимости от системной локали.
+    // std::stod зависит от LC_NUMERIC: на русской/немецкой локали
+    // разделитель — запятая, и stod("10.5") вернул бы 10, а не 10.5.
+    // Используем std::strtod с C-локалью через std::from_chars НЕЛЬЗЯ
+    // (она поддерживает только точку, но не везде в стандартной библиотеке
+    // реализована для double), поэтому делаем простой ручной разбор:
+    // целая часть, точка, дробная часть.
+    double value = 0.0;
+    size_t k = 0;
+    // Целая часть (если есть).
+    while (k < num.size() && std::isdigit(static_cast<unsigned char>(num[k]))) {
+        value = value * 10.0 + (num[k] - '0');
+        ++k;
+    }
+    // Дробная часть (после точки).
+    if (k < num.size() && num[k] == '.') {
+        ++k;
+        double scale = 0.1;
+        while (k < num.size() && std::isdigit(static_cast<unsigned char>(num[k]))) {
+            value += (num[k] - '0') * scale;
+            scale *= 0.1;
+            ++k;
+        }
+    }
+    return {TokenType::Number, num, value};
 }
 
 // ---------------------------------------------------------------------
