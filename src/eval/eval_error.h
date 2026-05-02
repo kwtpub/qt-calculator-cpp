@@ -1,17 +1,28 @@
-#pragma once
+// =====================================================================
+// eval_error.h — исключение для МАТЕМАТИЧЕСКИХ ошибок вычисления.
+// Бросается из functions, operators и evaluator:
+//   - деление на ноль,
+//   - ln/sqrt от числа вне области определения,
+//   - переполнение (inf/nan),
+//   - структурные ошибки RPN (нехватка операндов).
+//
+// Для СИНТАКСИЧЕСКИХ ошибок (двойные точки, лишние скобки, и т.п.)
+// используется отдельный класс ParseError из parser/parse_error.h.
+// =====================================================================
 
-// Исключение для ошибок на этапе вычисления (математика).
-// Бросается из functions, operators и evaluator.
-// Для синтаксических ошибок есть отдельный ParseError в parser/.
+#pragma once
 
 #include <stdexcept>
 #include <string>
 
 namespace eval {
 
+// Тот же приём, что и у ParseError: наследуемся от runtime_error,
+// чтобы можно было ловить как ParseError, так и EvalError одним
+// catch (const std::exception&) — у обоих общий базовый класс.
 class EvalError : public std::runtime_error {
 public:
     explicit EvalError(const std::string& msg) : std::runtime_error(msg) {}
 };
 
-}
+}  // namespace eval

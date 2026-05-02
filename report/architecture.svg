@@ -1,0 +1,263 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 880" font-family="-apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif">
+  <defs>
+    <!-- Тени для карточек модулей -->
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="3"/>
+      <feOffset dx="0" dy="2" result="off"/>
+      <feComponentTransfer><feFuncA type="linear" slope="0.18"/></feComponentTransfer>
+      <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+
+    <!-- Стрелка-наконечник -->
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#334155"/>
+    </marker>
+    <marker id="arrowErr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#dc2626"/>
+    </marker>
+  </defs>
+
+  <!-- Фон -->
+  <rect width="1200" height="880" fill="#f8fafc"/>
+
+  <!-- ЗАГОЛОВОК -->
+  <text x="600" y="42" text-anchor="middle" font-size="24" font-weight="700" fill="#0f172a">
+    Архитектура калькулятора (вариант 2)
+  </text>
+  <text x="600" y="66" text-anchor="middle" font-size="14" fill="#64748b">
+    Поток данных: пользователь → UI → парсер → вычислитель → UI → пользователь
+  </text>
+
+  <!-- ============================================================== -->
+  <!-- СЛОЙ 1: Пользователь                                            -->
+  <!-- ============================================================== -->
+  <g>
+    <rect x="450" y="100" width="300" height="60" rx="30" fill="#fef3c7" stroke="#f59e0b" stroke-width="2" filter="url(#shadow)"/>
+    <text x="600" y="130" text-anchor="middle" font-size="16" font-weight="600" fill="#78350f">👤 Пользователь</text>
+    <text x="600" y="148" text-anchor="middle" font-size="12" fill="#92400e">клики мышью + клавиатура</text>
+  </g>
+
+  <!-- ============================================================== -->
+  <!-- СЛОЙ 2: UI (модуль ui/)                                         -->
+  <!-- ============================================================== -->
+  <g>
+    <!-- Контейнер слоя -->
+    <rect x="60" y="200" width="1080" height="220" rx="12" fill="#dbeafe" stroke="#3b82f6" stroke-width="2" stroke-dasharray="6 4"/>
+    <text x="80" y="225" font-size="14" font-weight="700" fill="#1e40af">Слой UI · src/ui/</text>
+    <text x="80" y="243" font-size="12" fill="#3b82f6">Графический интерфейс на Qt6 — отвечает за отображение и ввод</text>
+
+    <!-- main.cpp -->
+    <g filter="url(#shadow)">
+      <rect x="90" y="260" width="180" height="130" rx="10" fill="#ffffff" stroke="#3b82f6" stroke-width="1.5"/>
+      <text x="180" y="285" text-anchor="middle" font-size="14" font-weight="700" fill="#1e3a8a">main.cpp</text>
+      <line x1="110" y1="295" x2="250" y2="295" stroke="#cbd5e1" stroke-width="1"/>
+      <text x="180" y="315" text-anchor="middle" font-size="11" fill="#475569">точка входа</text>
+      <text x="180" y="335" text-anchor="middle" font-size="11" fill="#475569">создаёт QApplication</text>
+      <text x="180" y="355" text-anchor="middle" font-size="11" fill="#475569">показывает MainWindow</text>
+      <text x="180" y="375" text-anchor="middle" font-size="11" fill="#475569">запускает event-loop</text>
+    </g>
+
+    <!-- main_window -->
+    <g filter="url(#shadow)">
+      <rect x="300" y="260" width="220" height="130" rx="10" fill="#ffffff" stroke="#3b82f6" stroke-width="1.5"/>
+      <text x="410" y="285" text-anchor="middle" font-size="14" font-weight="700" fill="#1e3a8a">main_window</text>
+      <line x1="320" y1="295" x2="500" y2="295" stroke="#cbd5e1" stroke-width="1"/>
+      <text x="410" y="315" text-anchor="middle" font-size="11" fill="#475569">главное окно</text>
+      <text x="410" y="333" text-anchor="middle" font-size="11" fill="#475569">обработка кликов и клавиш</text>
+      <text x="410" y="351" text-anchor="middle" font-size="11" fill="#475569">compute() — главный сценарий</text>
+      <text x="410" y="369" text-anchor="middle" font-size="11" fill="#475569">try/catch для ошибок</text>
+    </g>
+
+    <!-- button_layout -->
+    <g filter="url(#shadow)">
+      <rect x="550" y="260" width="180" height="130" rx="10" fill="#ffffff" stroke="#3b82f6" stroke-width="1.5"/>
+      <text x="640" y="285" text-anchor="middle" font-size="14" font-weight="700" fill="#1e3a8a">button_layout</text>
+      <line x1="570" y1="295" x2="710" y2="295" stroke="#cbd5e1" stroke-width="1"/>
+      <text x="640" y="315" text-anchor="middle" font-size="11" fill="#475569">раскладка 7×4</text>
+      <text x="640" y="333" text-anchor="middle" font-size="11" fill="#475569">список кнопок</text>
+      <text x="640" y="351" text-anchor="middle" font-size="11" fill="#475569">тип каждой кнопки</text>
+      <text x="640" y="369" text-anchor="middle" font-size="11" fill="#475569">данные, не код</text>
+    </g>
+
+    <!-- format -->
+    <g filter="url(#shadow)">
+      <rect x="760" y="260" width="170" height="130" rx="10" fill="#ffffff" stroke="#3b82f6" stroke-width="1.5"/>
+      <text x="845" y="285" text-anchor="middle" font-size="14" font-weight="700" fill="#1e3a8a">format</text>
+      <line x1="780" y1="295" x2="910" y2="295" stroke="#cbd5e1" stroke-width="1"/>
+      <text x="845" y="315" text-anchor="middle" font-size="11" fill="#475569">÷ × − → / * -</text>
+      <text x="845" y="333" text-anchor="middle" font-size="11" fill="#475569">форматирует</text>
+      <text x="845" y="351" text-anchor="middle" font-size="11" fill="#475569">результат для</text>
+      <text x="845" y="369" text-anchor="middle" font-size="11" fill="#475569">дисплея</text>
+    </g>
+
+    <!-- theme -->
+    <g filter="url(#shadow)">
+      <rect x="960" y="260" width="160" height="130" rx="10" fill="#ffffff" stroke="#3b82f6" stroke-width="1.5"/>
+      <text x="1040" y="285" text-anchor="middle" font-size="14" font-weight="700" fill="#1e3a8a">theme</text>
+      <line x1="980" y1="295" x2="1100" y2="295" stroke="#cbd5e1" stroke-width="1"/>
+      <text x="1040" y="315" text-anchor="middle" font-size="11" fill="#475569">QSS-стили</text>
+      <text x="1040" y="333" text-anchor="middle" font-size="11" fill="#475569">палитра</text>
+      <text x="1040" y="351" text-anchor="middle" font-size="11" fill="#475569">Catppuccin</text>
+      <text x="1040" y="369" text-anchor="middle" font-size="11" fill="#475569">Mocha</text>
+    </g>
+  </g>
+
+  <!-- ============================================================== -->
+  <!-- СЛОЙ 3: Парсер (модуль parser/)                                 -->
+  <!-- ============================================================== -->
+  <g>
+    <rect x="60" y="460" width="540" height="220" rx="12" fill="#dcfce7" stroke="#16a34a" stroke-width="2" stroke-dasharray="6 4"/>
+    <text x="80" y="485" font-size="14" font-weight="700" fill="#14532d">Слой парсинга · src/parser/</text>
+    <text x="80" y="503" font-size="12" fill="#16a34a">Превращает строку в обратную польскую запись (ОПЗ / RPN)</text>
+
+    <!-- tokenizer -->
+    <g filter="url(#shadow)">
+      <rect x="90" y="520" width="240" height="140" rx="10" fill="#ffffff" stroke="#16a34a" stroke-width="1.5"/>
+      <text x="210" y="545" text-anchor="middle" font-size="14" font-weight="700" fill="#14532d">tokenizer</text>
+      <line x1="110" y1="555" x2="310" y2="555" stroke="#cbd5e1" stroke-width="1"/>
+      <text x="210" y="575" text-anchor="middle" font-size="11" fill="#475569">лексический анализ</text>
+      <text x="210" y="593" text-anchor="middle" font-size="11" font-style="italic" fill="#16a34a">"2+sqrt(9)"</text>
+      <text x="210" y="611" text-anchor="middle" font-size="11" fill="#475569">↓</text>
+      <text x="210" y="629" text-anchor="middle" font-size="11" font-style="italic" fill="#16a34a">[2, +, sqrt, (, 9, )]</text>
+      <text x="210" y="649" text-anchor="middle" font-size="10" fill="#94a3b8">распознавание унарного минуса</text>
+    </g>
+
+    <!-- shunting_yard -->
+    <g filter="url(#shadow)">
+      <rect x="350" y="520" width="240" height="140" rx="10" fill="#ffffff" stroke="#16a34a" stroke-width="1.5"/>
+      <text x="470" y="545" text-anchor="middle" font-size="14" font-weight="700" fill="#14532d">shunting_yard</text>
+      <line x1="370" y1="555" x2="570" y2="555" stroke="#cbd5e1" stroke-width="1"/>
+      <text x="470" y="575" text-anchor="middle" font-size="11" fill="#475569">алгоритм Дейкстры</text>
+      <text x="470" y="593" text-anchor="middle" font-size="11" font-style="italic" fill="#16a34a">[2, +, sqrt, (, 9, )]</text>
+      <text x="470" y="611" text-anchor="middle" font-size="11" fill="#475569">↓</text>
+      <text x="470" y="629" text-anchor="middle" font-size="11" font-style="italic" fill="#16a34a">[2, 9, sqrt, +]</text>
+      <text x="470" y="649" text-anchor="middle" font-size="10" fill="#94a3b8">учёт скобок и приоритетов</text>
+    </g>
+  </g>
+
+  <!-- ============================================================== -->
+  <!-- СЛОЙ 4: Вычислитель (модуль eval/)                              -->
+  <!-- ============================================================== -->
+  <g>
+    <rect x="640" y="460" width="500" height="220" rx="12" fill="#fce7f3" stroke="#db2777" stroke-width="2" stroke-dasharray="6 4"/>
+    <text x="660" y="485" font-size="14" font-weight="700" fill="#831843">Слой вычисления · src/eval/</text>
+    <text x="660" y="503" font-size="12" fill="#db2777">Считает значение по ОПЗ через стек чисел</text>
+
+    <!-- evaluator -->
+    <g filter="url(#shadow)">
+      <rect x="670" y="520" width="200" height="140" rx="10" fill="#ffffff" stroke="#db2777" stroke-width="1.5"/>
+      <text x="770" y="545" text-anchor="middle" font-size="14" font-weight="700" fill="#831843">evaluator</text>
+      <line x1="690" y1="555" x2="850" y2="555" stroke="#cbd5e1" stroke-width="1"/>
+      <text x="770" y="575" text-anchor="middle" font-size="11" fill="#475569">обход RPN со стеком</text>
+      <text x="770" y="593" text-anchor="middle" font-size="11" font-style="italic" fill="#db2777">[2, 9, sqrt, +]</text>
+      <text x="770" y="611" text-anchor="middle" font-size="11" fill="#475569">↓</text>
+      <text x="770" y="629" text-anchor="middle" font-size="11" font-style="italic" fill="#db2777">5.0</text>
+      <text x="770" y="649" text-anchor="middle" font-size="10" fill="#94a3b8">проверка на inf/nan</text>
+    </g>
+
+    <!-- operators -->
+    <g filter="url(#shadow)">
+      <rect x="890" y="520" width="110" height="140" rx="10" fill="#ffffff" stroke="#db2777" stroke-width="1.5"/>
+      <text x="945" y="545" text-anchor="middle" font-size="13" font-weight="700" fill="#831843">operators</text>
+      <line x1="900" y1="555" x2="990" y2="555" stroke="#cbd5e1" stroke-width="1"/>
+      <text x="945" y="577" text-anchor="middle" font-size="11" fill="#475569">+ − × ÷</text>
+      <text x="945" y="595" text-anchor="middle" font-size="11" fill="#475569">унарный −</text>
+      <text x="945" y="625" text-anchor="middle" font-size="10" fill="#dc2626">деление</text>
+      <text x="945" y="640" text-anchor="middle" font-size="10" fill="#dc2626">на ноль →</text>
+      <text x="945" y="655" text-anchor="middle" font-size="10" fill="#dc2626">ошибка</text>
+    </g>
+
+    <!-- functions -->
+    <g filter="url(#shadow)">
+      <rect x="1015" y="520" width="110" height="140" rx="10" fill="#ffffff" stroke="#db2777" stroke-width="1.5"/>
+      <text x="1070" y="545" text-anchor="middle" font-size="13" font-weight="700" fill="#831843">functions</text>
+      <line x1="1025" y1="555" x2="1115" y2="555" stroke="#cbd5e1" stroke-width="1"/>
+      <text x="1070" y="577" text-anchor="middle" font-size="11" fill="#475569">ln, exp</text>
+      <text x="1070" y="595" text-anchor="middle" font-size="11" fill="#475569">sqrt, abs</text>
+      <text x="1070" y="625" text-anchor="middle" font-size="10" fill="#dc2626">область</text>
+      <text x="1070" y="640" text-anchor="middle" font-size="10" fill="#dc2626">определения</text>
+      <text x="1070" y="655" text-anchor="middle" font-size="10" fill="#dc2626">→ ошибка</text>
+    </g>
+  </g>
+
+  <!-- ============================================================== -->
+  <!-- СТРЕЛКИ — поток данных                                          -->
+  <!-- ============================================================== -->
+
+  <!-- Пользователь → main_window -->
+  <path d="M 600,160 L 410,260" fill="none" stroke="#334155" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="475" y="205" font-size="11" font-weight="600" fill="#334155">клик / клавиша</text>
+
+  <!-- main → main_window (создание) -->
+  <path d="M 230,310 L 300,310" fill="none" stroke="#334155" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="240" y="303" font-size="10" fill="#64748b">создаёт</text>
+
+  <!-- main_window ↔ button_layout -->
+  <path d="M 520,330 L 550,330" fill="none" stroke="#334155" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="513" y="322" font-size="10" fill="#64748b">читает</text>
+
+  <!-- main_window ↔ format -->
+  <path d="M 520,360 L 760,360" fill="none" stroke="#334155" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="630" y="353" font-size="10" fill="#64748b">использует</text>
+
+  <!-- main_window ↔ theme -->
+  <path d="M 520,300 C 700,300 880,300 960,300" fill="none" stroke="#334155" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="800" y="293" font-size="10" fill="#64748b">применяет</text>
+
+  <!-- main_window → tokenizer -->
+  <path d="M 410,390 L 410,440 L 210,440 L 210,520" fill="none" stroke="#0ea5e9" stroke-width="2.5" marker-end="url(#arrow)"/>
+  <text x="220" y="432" font-size="11" font-weight="600" fill="#0369a1">строка выражения</text>
+
+  <!-- tokenizer → shunting_yard -->
+  <path d="M 330,590 L 350,590" fill="none" stroke="#0ea5e9" stroke-width="2.5" marker-end="url(#arrow)"/>
+
+  <!-- shunting_yard → evaluator -->
+  <path d="M 590,590 L 670,590" fill="none" stroke="#0ea5e9" stroke-width="2.5" marker-end="url(#arrow)"/>
+  <text x="600" y="582" font-size="10" font-weight="600" fill="#0369a1">RPN</text>
+
+  <!-- evaluator → operators -->
+  <path d="M 870,580 L 890,580" fill="none" stroke="#334155" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- evaluator → functions -->
+  <path d="M 870,605 L 1015,605" fill="none" stroke="#334155" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- evaluator → main_window (результат) -->
+  <path d="M 770,520 L 770,440 L 480,440 L 480,390" fill="none" stroke="#16a34a" stroke-width="2.5" marker-end="url(#arrow)"/>
+  <text x="540" y="432" font-size="11" font-weight="600" fill="#15803d">double r или ошибка</text>
+
+  <!-- main_window → пользователь (вывод) -->
+  <path d="M 410,260 L 600,165" fill="none" stroke="#16a34a" stroke-width="2" marker-end="url(#arrow)" stroke-dasharray="5 3"/>
+  <text x="425" y="220" font-size="11" font-weight="600" fill="#15803d">результат на дисплее</text>
+
+  <!-- ============================================================== -->
+  <!-- ЛЕГЕНДА                                                         -->
+  <!-- ============================================================== -->
+  <g>
+    <rect x="60" y="720" width="1080" height="140" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="80" y="745" font-size="13" font-weight="700" fill="#0f172a">Легенда</text>
+
+    <!-- Слои -->
+    <rect x="80" y="760" width="14" height="14" fill="#dbeafe" stroke="#3b82f6"/>
+    <text x="102" y="772" font-size="12" fill="#334155">UI — Qt-виджеты, обработка пользовательских действий</text>
+
+    <rect x="80" y="785" width="14" height="14" fill="#dcfce7" stroke="#16a34a"/>
+    <text x="102" y="797" font-size="12" fill="#334155">parser — разбор строки и преобразование в ОПЗ</text>
+
+    <rect x="80" y="810" width="14" height="14" fill="#fce7f3" stroke="#db2777"/>
+    <text x="102" y="822" font-size="12" fill="#334155">eval — вычисление по ОПЗ, операторы и функции</text>
+
+    <!-- Стрелки -->
+    <line x1="600" y1="767" x2="640" y2="767" stroke="#0ea5e9" stroke-width="2.5" marker-end="url(#arrow)"/>
+    <text x="650" y="772" font-size="12" fill="#334155">основной поток данных (строка → токены → RPN → число)</text>
+
+    <line x1="600" y1="792" x2="640" y2="792" stroke="#16a34a" stroke-width="2.5" marker-end="url(#arrow)"/>
+    <text x="650" y="797" font-size="12" fill="#334155">результат: успешно посчитанное значение</text>
+
+    <line x1="600" y1="817" x2="640" y2="817" stroke="#334155" stroke-width="1.5" marker-end="url(#arrow)"/>
+    <text x="650" y="822" font-size="12" fill="#334155">служебная зависимость (создаёт, использует, читает)</text>
+
+    <!-- Ошибки -->
+    <text x="80" y="846" font-size="11" fill="#dc2626" font-style="italic">Ошибки на любом этапе (синтаксис, деление на 0, вне области определения) поднимаются исключением и ловятся в MainWindow::compute() → выводятся красным.</text>
+  </g>
+</svg>
