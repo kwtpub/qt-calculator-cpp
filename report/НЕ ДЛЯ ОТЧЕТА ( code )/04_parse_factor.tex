@@ -1,0 +1,42 @@
+\input{_preamble}
+
+\begin{document}
+
+\noindent\textbf{Файл:} \texttt{src/parser.cpp}, метод \texttt{Parser::parse\_factor()}\\
+\textbf{Назначение:} разбор атомов выражения --- числа, скобки, унарный минус, имя функции.
+
+\begin{lstlisting}
+// factor := число | (expr) | -factor | имя(expr)
+// Самый "глубокий" уровень: атомы выражения.
+double parse_factor() {
+    char c = peek();
+
+    // Унарный минус — допустим всегда (в начале выражения, после
+    // оператора, после '(' и т.п.). Рекурсивно зовём parse_factor,
+    // так "--5" = -(-5) = 5 само разворачивается.
+    if (c == '-') { eat(); return -parse_factor(); }
+
+    // Скобки: вычисляем содержимое как полноценное выражение.
+    if (c == '(') {
+        eat();
+        double r = parse_expression();
+        expect(')');
+        return r;
+    }
+
+    // Имя функции: ln, exp, sqrt, abs.
+    if (std::isalpha(static_cast<unsigned char>(c))) {
+        return parse_function();
+    }
+
+    // Число (или ошибка, если ничего больше не подошло).
+    if (std::isdigit(static_cast<unsigned char>(c)) || c == '.') {
+        return parse_number();
+    }
+
+    if (c == '\0') throw std::runtime_error("Неожиданный конец выражения");
+    throw std::runtime_error(std::string("Неожиданный символ: '") + c + "'");
+}
+\end{lstlisting}
+
+\end{document}

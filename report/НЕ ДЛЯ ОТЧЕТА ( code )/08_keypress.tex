@@ -1,0 +1,35 @@
+\input{_preamble}
+
+\begin{document}
+
+\noindent\textbf{Файл:} \texttt{src/ui/main\_window.cpp}, метод \texttt{MainWindow::keyPressEvent()}\\
+\textbf{Назначение:} поддержка ввода с клавиатуры (цифры, операторы, Enter, Backspace, Esc).
+
+\begin{lstlisting}
+// Перехват клавиатуры. Qt вызывает этот метод, когда окно в фокусе.
+void MainWindow::keyPressEvent(QKeyEvent* event) {
+    int key = event->key();
+    QString text = event->text();
+
+    // Enter, Return или "=" — вычислить.
+    if (key == Qt::Key_Return || key == Qt::Key_Enter || key == Qt::Key_Equal) { compute();        return; }
+    // Backspace — стереть.
+    if (key == Qt::Key_Backspace)                                               { backspace();      return; }
+    // Escape — полный сброс.
+    if (key == Qt::Key_Escape)                                                  { clear_display();  return; }
+
+    // Любой обычный символ: цифра, оператор, скобка, точка, буква
+    // (буквы — для функций ln/exp/sqrt/abs).
+    if (!text.isEmpty()) {
+        QChar c = text.at(0);
+        if (c.isDigit() || c == '.' || c == '+' || c == '-' || c == '*' || c == '/'
+            || c == '(' || c == ')' || c.isLetter()) {
+            append(text);
+            return;
+        }
+    }
+    QMainWindow::keyPressEvent(event);
+}
+\end{lstlisting}
+
+\end{document}

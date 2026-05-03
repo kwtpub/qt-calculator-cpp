@@ -1,0 +1,101 @@
+% Блок-схема функции MainWindow::compute()
+% ГОСТ 19.701-90, src/ui/main_window.cpp
+
+\documentclass[a4paper]{article}
+\usepackage[T2A]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[russian]{babel}
+\usepackage[a4paper,margin=1.5cm]{geometry}
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric, arrows.meta, positioning, calc}
+
+\tikzset{
+  terminal/.style={
+    rectangle, rounded corners=8pt,
+    draw=black, line width=1pt,
+    minimum width=4.6cm, minimum height=0.9cm,
+    text centered, font=\small
+  },
+  process/.style={
+    rectangle,
+    draw=black, line width=1pt,
+    minimum width=4.6cm, minimum height=0.9cm,
+    text centered, font=\small
+  },
+  decision/.style={
+    diamond, aspect=2.4,
+    draw=black, line width=1pt,
+    inner sep=1pt,
+    minimum width=3.4cm, minimum height=0.9cm,
+    text centered, font=\footnotesize
+  },
+  io/.style={
+    trapezium, trapezium left angle=75, trapezium right angle=105,
+    draw=black, line width=1pt,
+    minimum width=4.6cm, minimum height=0.9cm,
+    text centered, font=\small, align=center
+  },
+  predefined/.style={
+    rectangle, double, double distance=2pt,
+    draw=black, line width=1pt,
+    minimum width=4.6cm, minimum height=0.9cm,
+    text centered, font=\small
+  },
+  arrow/.style={->, >=Stealth, line width=1pt}
+}
+
+\begin{document}
+\begin{center}
+\textbf{Блок-схема функции \texttt{MainWindow::compute()}}
+\end{center}
+
+\begin{center}
+\begin{tikzpicture}[node distance=0.7cm]
+
+\node (start)   [terminal]                        {Начало};
+\node (read)    [io,        below=of start]       {expr = текст поля ввода (trimmed)};
+\node (empty)   [decision,  below=of read]        {expr пустой?};
+
+\node (showNil) [predefined, right=2.8cm of empty] {show\_result(\textquotedbl\textquotedbl, false)};
+\node (retE)    [terminal,   below=of showNil]    {Конец};
+
+\node (eval)    [predefined, below=of empty]      {r = calc::evaluate(expr)};
+\node (err)     [decision,   below=of eval]       {Исключение?};
+
+\node (histErr) [process,    below=of err, xshift=-3.5cm]
+                                                  {history = expr};
+\node (showErr) [io,         below=of histErr, align=center]
+                                                  {Показать e.what() (красным)};
+
+\node (histOk)  [process,    below=of err, xshift=3.5cm]
+                                                  {history = expr + \textquotedbl\ =\textquotedbl};
+\node (fmt)     [predefined, below=of histOk]     {text = format\_result(r)};
+\node (showOk)  [io,         below=of fmt, align=center]
+                                                  {Показать text (зелёным)};
+
+\node (finish)  [terminal,   below=2.2cm of err, yshift=-3.8cm]
+                                                  {Конец};
+
+\draw [arrow] (start)   -- (read);
+\draw [arrow] (read)    -- (empty);
+
+\draw [arrow] (empty)   -- node[above] {Да}  (showNil);
+\draw [arrow] (showNil) -- (retE);
+
+\draw [arrow] (empty)   -- node[left]  {Нет} (eval);
+\draw [arrow] (eval)    -- (err);
+
+\draw [arrow] (err.west)  -| node[above, pos=0.25] {Да}  (histErr.north);
+\draw [arrow] (err.east)  -| node[above, pos=0.25] {Нет} (histOk.north);
+
+\draw [arrow] (histErr) -- (showErr);
+\draw [arrow] (histOk)  -- (fmt);
+\draw [arrow] (fmt)     -- (showOk);
+
+\draw [arrow] (showErr.south) |- (finish.west);
+\draw [arrow] (showOk.south)  |- (finish.east);
+
+\end{tikzpicture}
+\end{center}
+
+\end{document}

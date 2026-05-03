@@ -1,0 +1,32 @@
+\input{_preamble}
+
+\begin{document}
+
+\noindent\textbf{Файл:} \texttt{src/parser.cpp}, метод \texttt{Parser::parse\_expression()}\\
+\textbf{Назначение:} обработка операторов сложения и вычитания (самый низкий приоритет).
+
+\begin{lstlisting}
+// expression := term (('+' | '-') term)*
+// Сложение и вычитание — самые слабые операторы. Поэтому они
+// обрабатываются в самом верхнем уровне рекурсии.
+double parse_expression() {
+    double left = parse_term();
+    while (true) {
+        char c = peek();
+        if (c != '+' && c != '-') break;
+        eat();
+        // После бинарного оператора ждём ОПЕРАНД, не ещё один оператор:
+        // так "2++3" поймает ошибку двойного оператора.
+        char nxt = peek();
+        if (nxt == '+' || nxt == '*' || nxt == '/') {
+            throw std::runtime_error(
+                std::string("Двойной оператор: '") + c + nxt + "'");
+        }
+        double right = parse_term();
+        left = (c == '+') ? left + right : left - right;
+    }
+    return left;
+}
+\end{lstlisting}
+
+\end{document}

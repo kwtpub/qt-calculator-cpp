@@ -1,0 +1,35 @@
+\input{_preamble}
+
+\begin{document}
+
+\noindent\textbf{Файл:} \texttt{src/parser.cpp}, метод \texttt{Parser::parse\_term()}\\
+\textbf{Назначение:} обработка операторов умножения и деления; проверка деления на ноль.
+
+\begin{lstlisting}
+// term := factor (('*' | '/') factor)*
+// Умножение и деление сильнее сложения, поэтому обрабатываются
+// на уровень глубже.
+double parse_term() {
+    double left = parse_factor();
+    while (true) {
+        char c = peek();
+        if (c != '*' && c != '/') break;
+        eat();
+        char nxt = peek();
+        if (nxt == '+' || nxt == '*' || nxt == '/') {
+            throw std::runtime_error(
+                std::string("Двойной оператор: '") + c + nxt + "'");
+        }
+        double right = parse_factor();
+        if (c == '*') {
+            left = left * right;
+        } else {
+            if (right == 0.0) throw std::runtime_error("Деление на ноль");
+            left = left / right;
+        }
+    }
+    return left;
+}
+\end{lstlisting}
+
+\end{document}

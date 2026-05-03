@@ -1,0 +1,173 @@
+% Блок-схемы parse_expression() и parse_term() — рекурсивный спуск
+% ГОСТ 19.701-90, src/parser.cpp
+
+\documentclass[a4paper]{article}
+\usepackage[T2A]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[russian]{babel}
+\usepackage[a4paper,margin=1.5cm]{geometry}
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric, arrows.meta, positioning, calc}
+
+\tikzset{
+  terminal/.style={
+    rectangle, rounded corners=8pt,
+    draw=black, line width=1pt,
+    minimum width=4.2cm, minimum height=0.85cm,
+    text centered, font=\footnotesize
+  },
+  process/.style={
+    rectangle,
+    draw=black, line width=1pt,
+    minimum width=4.2cm, minimum height=0.85cm,
+    text centered, font=\footnotesize
+  },
+  decision/.style={
+    diamond, aspect=2.4,
+    draw=black, line width=1pt,
+    inner sep=1pt,
+    minimum width=3cm, minimum height=0.85cm,
+    text centered, font=\footnotesize
+  },
+  predefined/.style={
+    rectangle, double, double distance=2pt,
+    draw=black, line width=1pt,
+    minimum width=4.2cm, minimum height=0.85cm,
+    text centered, font=\footnotesize
+  },
+  connector/.style={
+    circle,
+    draw=black, line width=1pt,
+    minimum size=0.65cm,
+    text centered, font=\footnotesize\bfseries
+  },
+  arrow/.style={->, >=Stealth, line width=1pt}
+}
+
+% ================================================================
+% ЧАСТЬ 1 — parse_expression()
+% Возврат цикла: одиночная стрелка слева (Z-образный путь).
+% Два исхода (left+right / left-right) объединены в один блок,
+% чтобы не было пересекающихся ветвей.
+% ================================================================
+\begin{document}
+\begin{center}
+\textbf{Блок-схема функции \texttt{parse\_expression()}}
+\end{center}
+
+\begin{center}
+\begin{tikzpicture}[node distance=0.7cm]
+
+\node (start) [terminal]                    {Начало parse\_expression};
+\node (init)  [predefined, below=of start]  {left = parse\_term()};
+
+\node (peek)  [predefined, below=of init]   {c = peek()};
+\node (cond)  [decision,   below=of peek]   {c == '+' или \textquoteleft-\textquoteright?};
+
+%% Выход из цикла вправо
+\node (ret)   [terminal, right=4cm of cond] {Возврат left};
+
+%% Тело цикла — вниз по главной оси
+\node (eat)   [process,    below=of cond]   {eat()};
+\node (peek2) [predefined, below=of eat]    {nxt = peek()};
+\node (dbl)   [decision,   below=of peek2]  {nxt $\in$ \{'+', '*', '/'\}?};
+
+%% Ошибка — вправо
+\node (errDbl)[terminal, right=4cm of dbl]  {throw \textquotedbl Двойной оператор\textquotedbl};
+
+\node (rterm) [predefined, below=of dbl]    {right = parse\_term()};
+%% Один блок обновления: знак определяется сохранённым c
+\node (upd)   [process,    below=of rterm]  {left = left $\pm$ right \ {\scriptsize(знак = c)}};
+
+%% Возврат к вершине цикла: Z-путь по левому полю → прямо в peek
+\coordinate (Lbot) at ($(upd.west)   + (-3.2, 0)$);
+\coordinate (Ltop) at ($(peek.west)  + (-3.2, 0)$);
+\draw [arrow] (upd.west) -- (Lbot) -- (Ltop) -- (peek.west);
+
+\draw [arrow] (start)  -- (init);
+\draw [arrow] (init)   -- (peek);
+\draw [arrow] (peek)   -- (cond);
+\draw [arrow] (cond)   -- node[above]{\footnotesize Нет} (ret);
+\draw [arrow] (cond)   -- node[left] {\footnotesize Да}  (eat);
+\draw [arrow] (eat)    -- (peek2);
+\draw [arrow] (peek2)  -- (dbl);
+\draw [arrow] (dbl)    -- node[above]{\footnotesize Да}  (errDbl);
+\draw [arrow] (dbl)    -- node[left] {\footnotesize Нет} (rterm);
+\draw [arrow] (rterm)  -- (upd);
+
+\end{tikzpicture}
+\end{center}
+
+\newpage
+
+% ================================================================
+% ЧАСТЬ 2 — parse_term()
+% isMul: Да -> вниз (mulL, главная ось)
+%        Нет -> вправо (chkZ, errZ, divL)
+% Два возврата: mulL и divL -> каждый своим Z-путём слева.
+% Для того чтобы Z-пути не пересекались, они используют
+% разные координаты по X: -3.2 и -4.2.
+% ================================================================
+\begin{center}
+\textbf{Блок-схема функции \texttt{parse\_term()}}
+\end{center}
+
+\begin{center}
+\begin{tikzpicture}[node distance=0.7cm]
+
+\node (start) [terminal]                    {Начало parse\_term};
+\node (init)  [predefined, below=of start]  {left = parse\_factor()};
+
+\node (peek)  [predefined, below=of init]   {c = peek()};
+\node (cond)  [decision,   below=of peek]   {c == '*' или \textquoteleft/\textquoteright?};
+
+%% Выход из цикла вправо
+\node (ret)   [terminal, right=4cm of cond] {Возврат left};
+
+\node (eat)   [process,    below=of cond]   {eat()};
+\node (peek2) [predefined, below=of eat]    {nxt = peek()};
+\node (dbl)   [decision,   below=of peek2]  {nxt $\in$ \{'+', '*', '/'\}?};
+
+\node (errDbl)[terminal, right=4cm of dbl]  {throw \textquotedbl Двойной оператор\textquotedbl};
+
+\node (rfact) [predefined, below=of dbl]    {right = parse\_factor()};
+\node (isMul) [decision,   below=of rfact]  {c == '*'?};
+
+%% Ветка '*' — вниз по главной оси
+\node (mulL)  [process,    below=1cm of isMul]  {left = left $\times$ right};
+
+%% Ветка '/' — вправо; ниже неё проверка нуля, ещё ниже деление
+\node (chkZ)  [decision,   right=4.5cm of isMul]  {right == 0?};
+\node (errZ)  [terminal,   right=3cm of chkZ]      {throw \textquotedbl Деление на ноль\textquotedbl};
+\node (divL)  [process,    below=1.5cm of chkZ]    {left = left $/$ right};
+
+%% ---- стрелки ----
+\draw [arrow] (start)  -- (init);
+\draw [arrow] (init)   -- (peek);
+\draw [arrow] (peek)   -- (cond);
+\draw [arrow] (cond)   -- node[above]{\footnotesize Нет} (ret);
+\draw [arrow] (cond)   -- node[left] {\footnotesize Да}  (eat);
+\draw [arrow] (eat)    -- (peek2);
+\draw [arrow] (peek2)  -- (dbl);
+\draw [arrow] (dbl)    -- node[above]{\footnotesize Да}  (errDbl);
+\draw [arrow] (dbl)    -- node[left] {\footnotesize Нет} (rfact);
+\draw [arrow] (rfact)  -- (isMul);
+\draw [arrow] (isMul)  -- node[left] {\footnotesize Да}  (mulL);
+\draw [arrow] (isMul)  -- node[above]{\footnotesize Нет} (chkZ);
+\draw [arrow] (chkZ)   -- node[above]{\footnotesize Да}  (errZ);
+\draw [arrow] (chkZ)   -- node[left] {\footnotesize Нет} (divL);
+
+%% Возврат mulL → peek: Z-путь по левому полю, вход слева
+\coordinate (LbotM) at ($(mulL.west)  + (-3.2, 0)$);
+\coordinate (LtopM) at ($(LbotM      |- peek.west)$);
+\draw [arrow] (mulL.west) -- (LbotM) -- (LtopM) -- (peek.west);
+
+%% Возврат divL → peek: Z-путь по левому полю, вход сверху
+\coordinate (LbotD) at ($(divL.west)  + (-9.0, 0)$);
+\coordinate (LtopD) at ($(LbotD      |- peek.north)$);
+\draw [arrow] (divL.west) -- (LbotD) -- (LtopD) -- (peek.north);
+
+\end{tikzpicture}
+\end{center}
+
+\end{document}

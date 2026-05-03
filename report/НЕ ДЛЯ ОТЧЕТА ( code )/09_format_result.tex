@@ -1,0 +1,35 @@
+\input{_preamble}
+
+\begin{document}
+
+\noindent\textbf{Файл:} \texttt{src/ui/format.cpp}, функция \texttt{format\_result()}\\
+\textbf{Назначение:} форматирование числа для дисплея --- целые без точки, дробные без хвостовых нулей.
+
+\begin{lstlisting}
+// Форматирует число для дисплея.
+// 1. Целое (без дробной части) — без точки: "5", "-42".
+// 2. Дробное в "человеческом" диапазоне — обычная запись с убранными
+//    хвостовыми нулями: "3.75", "0.1", "0.00001".
+// 3. Очень большие/маленькие — научная запись: "1.23e+20".
+QString format_result(double r) {
+    // Целое и в безопасном диапазоне для long long — печатаем без точки.
+    if (r == static_cast<long long>(r) && std::abs(r) < 1e15) {
+        return QString::number(static_cast<long long>(r));
+    }
+
+    const double abs_r = std::abs(r);
+
+    if (abs_r >= 1e-4 && abs_r < 1e15) {
+        QString s = QString::number(r, 'f', 12);   // 12 знаков после точки
+        // Убираем хвостовые нули, потом — лишнюю точку.
+        while (s.endsWith('0')) s.chop(1);
+        if (s.endsWith('.')) s.chop(1);
+        return s;
+    }
+
+    // Очень большие/маленькие числа — научная запись.
+    return QString::number(r, 'g', 12);
+}
+\end{lstlisting}
+
+\end{document}

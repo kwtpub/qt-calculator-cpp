@@ -1,0 +1,77 @@
+% Блок-схема функции Parser::parse() — точка входа рекурсивного спуска
+% ГОСТ 19.701-90, src/parser.cpp
+
+\documentclass[a4paper]{article}
+\usepackage[T2A]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[russian]{babel}
+\usepackage[a4paper,margin=1.5cm]{geometry}
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric, arrows.meta, positioning, calc}
+
+\tikzset{
+  terminal/.style={
+    rectangle, rounded corners=8pt,
+    draw=black, line width=1pt,
+    minimum width=4.6cm, minimum height=0.9cm,
+    text centered, font=\small
+  },
+  process/.style={
+    rectangle,
+    draw=black, line width=1pt,
+    minimum width=4.6cm, minimum height=0.9cm,
+    text centered, font=\small
+  },
+  decision/.style={
+    diamond, aspect=2.4,
+    draw=black, line width=1pt,
+    inner sep=1pt,
+    minimum width=3.4cm, minimum height=0.9cm,
+    text centered, font=\footnotesize
+  },
+  predefined/.style={
+    rectangle, double, double distance=2pt,
+    draw=black, line width=1pt,
+    minimum width=4.6cm, minimum height=0.9cm,
+    text centered, font=\small
+  },
+  arrow/.style={->, >=Stealth, line width=1pt}
+}
+
+\begin{document}
+\begin{center}
+\textbf{Блок-схема функции \texttt{Parser::parse()}}
+\end{center}
+
+\begin{center}
+\begin{tikzpicture}[node distance=0.7cm]
+
+\node (start)   [terminal]                       {Начало parse};
+\node (skip1)   [predefined, below=of start]     {skip\_spaces()};
+\node (chkEmp)  [decision,   below=of skip1]     {pos $\geq$ size?};
+
+\node (errEmp)  [terminal,   right=2.8cm of chkEmp]
+                                                 {throw \textquotedbl Пустое выражение\textquotedbl};
+
+\node (expr)    [predefined, below=of chkEmp]    {r = parse\_expression()};
+\node (skip2)   [predefined, below=of expr]      {skip\_spaces()};
+\node (chkTail) [decision,   below=of skip2]     {pos $<$ size?};
+
+\node (errTail) [terminal,   right=2.8cm of chkTail]
+                                                 {throw \textquotedbl Лишний символ: \textquotedblleft s[pos]\textquotedblright\textquotedbl};
+
+\node (ret)     [terminal,   below=of chkTail]   {Возврат r};
+
+\draw [arrow] (start)   -- (skip1);
+\draw [arrow] (skip1)   -- (chkEmp);
+\draw [arrow] (chkEmp)  -- node[above] {Да}  (errEmp);
+\draw [arrow] (chkEmp)  -- node[left]  {Нет} (expr);
+\draw [arrow] (expr)    -- (skip2);
+\draw [arrow] (skip2)   -- (chkTail);
+\draw [arrow] (chkTail) -- node[above] {Да}  (errTail);
+\draw [arrow] (chkTail) -- node[left]  {Нет} (ret);
+
+\end{tikzpicture}
+\end{center}
+
+\end{document}

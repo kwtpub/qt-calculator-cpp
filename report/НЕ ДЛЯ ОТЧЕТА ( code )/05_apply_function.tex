@@ -1,0 +1,31 @@
+\input{_preamble}
+
+\begin{document}
+
+\noindent\textbf{Файл:} \texttt{src/parser.cpp}, метод \texttt{Parser::apply\_function()}\\
+\textbf{Назначение:} вычисление функций варианта 2 (ln, exp, sqrt, abs) с проверкой области определения.
+
+\begin{lstlisting}
+// Применение функции по имени. Все четыре функции варианта 2.
+static double apply_function(const std::string& name, double x) {
+    if (name == "ln") {
+        if (x <= 0.0) throw std::runtime_error("ln от неположительного числа");
+        return std::log(x);
+    }
+    if (name == "exp") {
+        double r = std::exp(x);
+        if (!std::isfinite(r)) throw std::runtime_error("Переполнение");
+        return r;
+    }
+    if (name == "sqrt") {
+        if (x < 0.0) throw std::runtime_error("sqrt от отрицательного числа");
+        return std::sqrt(x);
+    }
+    if (name == "abs") {
+        return std::fabs(x);
+    }
+    throw std::runtime_error("Неизвестная функция: " + name);
+}
+\end{lstlisting}
+
+\end{document}

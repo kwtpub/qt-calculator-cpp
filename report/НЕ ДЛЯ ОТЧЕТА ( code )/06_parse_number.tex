@@ -1,0 +1,48 @@
+\input{_preamble}
+
+\begin{document}
+
+\noindent\textbf{Файл:} \texttt{src/parser.cpp}, метод \texttt{Parser::parse\_number()}\\
+\textbf{Назначение:} ручной разбор числа (целая часть, точка, дробная часть) --- независимо от системной локали.
+
+\begin{lstlisting}
+// Чтение числа: целая часть, точка, дробная часть.
+// Парсим вручную, чтобы не зависеть от системной локали
+// (на русской/немецкой стандартный std::stod ломается на точке).
+double parse_number() {
+    skip_spaces();
+    const size_t start = pos;
+    bool has_dot = false;
+
+    while (pos < s.size() && (std::isdigit(static_cast<unsigned char>(s[pos])) || s[pos] == '.')) {
+        if (s[pos] == '.') {
+            if (has_dot) throw std::runtime_error("Две точки в числе");
+            has_dot = true;
+        }
+        ++pos;
+    }
+
+    const std::string num = s.substr(start, pos - start);
+    if (num == ".") throw std::runtime_error("Одиночная точка не число");
+
+    // Ручной разбор: целая часть + дробная.
+    double value = 0.0;
+    size_t k = 0;
+    while (k < num.size() && std::isdigit(static_cast<unsigned char>(num[k]))) {
+        value = value * 10.0 + (num[k] - '0');
+        ++k;
+    }
+    if (k < num.size() && num[k] == '.') {
+        ++k;
+        double scale = 0.1;
+        while (k < num.size() && std::isdigit(static_cast<unsigned char>(num[k]))) {
+            value += (num[k] - '0') * scale;
+            scale *= 0.1;
+            ++k;
+        }
+    }
+    return value;
+}
+\end{lstlisting}
+
+\end{document}

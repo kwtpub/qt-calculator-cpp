@@ -1,0 +1,300 @@
+% Блок-схемы parse_factor / parse_function / apply_function / parse_number
+% ГОСТ 19.701-90, src/parser.cpp
+
+\documentclass[a4paper]{article}
+\usepackage[T2A]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[russian]{babel}
+\usepackage[a4paper,margin=1.4cm]{geometry}
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric, arrows.meta, positioning, calc}
+
+\tikzset{
+  terminal/.style={
+    rectangle, rounded corners=8pt,
+    draw=black, line width=1pt,
+    minimum width=4cm, minimum height=0.85cm,
+    text centered, font=\footnotesize
+  },
+  process/.style={
+    rectangle,
+    draw=black, line width=1pt,
+    minimum width=4cm, minimum height=0.85cm,
+    text centered, font=\footnotesize
+  },
+  decision/.style={
+    diamond, aspect=2.3,
+    draw=black, line width=1pt,
+    inner sep=1pt,
+    minimum width=3cm, minimum height=0.85cm,
+    text centered, font=\footnotesize
+  },
+  predefined/.style={
+    rectangle, double, double distance=2pt,
+    draw=black, line width=1pt,
+    minimum width=4cm, minimum height=0.85cm,
+    text centered, font=\footnotesize
+  },
+  connector/.style={
+    circle,
+    draw=black, line width=1pt,
+    minimum size=0.65cm,
+    text centered, font=\footnotesize\bfseries
+  },
+  arrow/.style={->, >=Stealth, line width=1pt}
+}
+
+% ================================================================
+% ЧАСТЬ 1 — parse_factor()
+%
+% Принцип: каждая ветка «Да» = один блок СТРОГО НА УРОВНЕ ромба.
+% Никаких вертикально накладывающихся правых ветвей.
+% Расстояния между ромбами подобраны с учётом высоты правых блоков.
+% ================================================================
+\begin{document}
+\begin{center}
+\textbf{Блок-схема функции \texttt{parse\_factor()}}
+\end{center}
+
+\begin{center}
+\begin{tikzpicture}[node distance=0.9cm]
+
+\node (start)  [terminal]                        {Начало parse\_factor};
+\node (getC)   [predefined, below=of start]      {c = peek()};
+
+\node (isMin)  [decision,   below=of getC]       {c == \textquoteleft-\textquoteright?};
+\node (isPar)  [decision,   below=1.8cm of isMin]{c == \textquoteleft(\textquoteright?};
+\node (isAlph) [decision,   below=1.6cm of isPar]{isalpha(c)?};
+\node (isDig)  [decision,   below=1.6cm of isAlph]{isdigit(c) или c==\textquoteleft.\textquoteright?};
+\node (isEos)  [decision,   below=1.6cm of isDig]{c == \textquoteleft{\textbackslash}0\textquoteright?};
+\node (errSym) [terminal,   below=1.2cm of isEos]{throw \textquotedbl Неожиданный символ\textquotedbl};
+
+%% Правые блоки — каждый на уровне своего ромба (right=4.5cm)
+\node (doMin)  [predefined, right=4.5cm of isMin]
+               {eat(); \ return $-$parse\_factor()};
+
+\node (doPar)  [predefined, right=4.5cm of isPar, text width=5.5cm, align=center]
+               {eat(); r = parse\_expression();\\expect(\textquoteleft)\textquoteright); \ return r};
+
+\node (doAlph) [predefined, right=4.5cm of isAlph]
+               {return parse\_function()};
+
+\node (doDig)  [predefined, right=4.5cm of isDig]
+               {return parse\_number()};
+
+\node (errEos) [terminal,   right=4.5cm of isEos]
+               {throw \textquotedbl Неожиданный конец\textquotedbl};
+
+%% Стрелки главной оси
+\draw [arrow] (start)  -- (getC);
+\draw [arrow] (getC)   -- (isMin);
+\draw [arrow] (isMin)  -- node[left]{\footnotesize Нет} (isPar);
+\draw [arrow] (isPar)  -- node[left]{\footnotesize Нет} (isAlph);
+\draw [arrow] (isAlph) -- node[left]{\footnotesize Нет} (isDig);
+\draw [arrow] (isDig)  -- node[left]{\footnotesize Нет} (isEos);
+\draw [arrow] (isEos)  -- node[left]{\footnotesize Нет} (errSym);
+
+%% Стрелки правых веток (Да)
+\draw [arrow] (isMin)  -- node[above]{\footnotesize Да} (doMin);
+\draw [arrow] (isPar)  -- node[above]{\footnotesize Да} (doPar);
+\draw [arrow] (isAlph) -- node[above]{\footnotesize Да} (doAlph);
+\draw [arrow] (isDig)  -- node[above]{\footnotesize Да} (doDig);
+\draw [arrow] (isEos)  -- node[above]{\footnotesize Да} (errEos);
+
+\end{tikzpicture}
+\end{center}
+
+\newpage
+
+% ================================================================
+% ЧАСТЬ 2 — parse_function()
+%
+% Цикл чтения имени. Возврат цикла — по правому полю:
+% addCh → вправо → вверх до cond → влево к cond.east
+% (Z-путь: три сегмента, x одинаковый на вертикальном участке)
+% ================================================================
+\begin{center}
+\textbf{Блок-схема функции \texttt{parse\_function()}}
+\end{center}
+
+\begin{center}
+\begin{tikzpicture}[node distance=0.8cm]
+
+\node (start)  [terminal]                    {Начало parse\_function};
+\node (init)   [process,    below=of start]  {name = \textquotedbl\textquotedbl};
+\node (cond)   [decision,   below=of init]   {isalpha(s[pos])?};
+\node (expL)   [process,    below=of cond]   {expect(\textquoteleft(\textquoteright)};
+\node (arg)    [predefined, below=of expL]   {arg = parse\_expression()};
+\node (expR)   [process,    below=of arg]    {expect(\textquoteleft)\textquoteright)};
+\node (apply)  [predefined, below=of expR]   {r = apply\_function(name, arg)};
+\node (ret)    [terminal,   below=of apply]  {Возврат r};
+
+\node (addCh)  [process,    right=4cm of cond]{name += s[pos]; \ pos++};
+
+\draw [arrow] (start)  -- (init);
+\draw [arrow] (init)   -- (cond);
+\draw [arrow] (cond)   -- node[above]{\footnotesize Да}  (addCh);
+\draw [arrow] (cond)   -- node[left] {\footnotesize Нет} (expL);
+\draw [arrow] (expL)   -- (arg);
+\draw [arrow] (arg)    -- (expR);
+\draw [arrow] (expR)   -- (apply);
+\draw [arrow] (apply)  -- (ret);
+
+%% Возврат addCh → cond: «мостик» над cond.
+%% addCh стоит на том же уровне что cond, поэтому нельзя идти «вверх до cond».
+%% Вместо этого: вправо → вверх выше cond.north → влево+вниз к cond.north.
+%% Используем -| (сначала вертикаль, потом горизонталь), входим в cond сверху.
+\draw [arrow] (addCh.east) -- ++(0.8,0) -- ++(0,0.7) -| (cond.north);
+
+\end{tikzpicture}
+\end{center}
+
+\newpage
+
+% ================================================================
+% ЧАСТЬ 3 — apply_function(name, x)
+%
+% Каскад ромбов. Для каждой функции — правая подсхема.
+% Расстояние 3.2cm между ромбами: правые блоки не перекрываются.
+% ================================================================
+\begin{center}
+\textbf{Блок-схема функции \texttt{apply\_function(name,\ x)}}
+\end{center}
+
+\begin{center}
+\begin{tikzpicture}[node distance=0.8cm]
+
+\node (start)  [terminal]                         {Начало apply\_function};
+\node (isLn)   [decision,   below=of start]       {name == \textquotedbl ln\textquotedbl?};
+\node (isExp)  [decision,   below=3.4cm of isLn]  {name == \textquotedbl exp\textquotedbl?};
+\node (isSqrt) [decision,   below=3.4cm of isExp] {name == \textquotedbl sqrt\textquotedbl?};
+\node (isAbs)  [decision,   below=3.4cm of isSqrt]{name == \textquotedbl abs\textquotedbl?};
+\node (errUnk) [terminal,   below=of isAbs]       {throw \textquotedbl Неизвестная функция\textquotedbl};
+
+%% Ветка ln
+\node (chkLn)  [decision,   right=4.5cm of isLn]  {$x \leq 0$?};
+\node (errLn)  [terminal,   above=0.7cm of chkLn] {throw \textquotedbl ln: $x \leq 0$\textquotedbl};
+\node (retLn)  [terminal,   below=0.7cm of chkLn] {Возврат $\ln(x)$};
+
+%% Ветка exp
+\node (calcE)  [process,    right=4.5cm of isExp] {r = exp($x$)};
+\node (chkFin) [decision,   below=0.7cm of calcE] {!isfinite(r)?};
+\node (errOvf) [terminal,   right=2.5cm of chkFin]{throw \textquotedbl Переполнение\textquotedbl};
+\node (retExp) [terminal,   below=0.7cm of chkFin]{Возврат r};
+
+%% Ветка sqrt
+\node (chkSq)  [decision,   right=4.5cm of isSqrt]{$x < 0$?};
+\node (errSq)  [terminal,   above=0.7cm of chkSq] {throw \textquotedbl sqrt: $x < 0$\textquotedbl};
+\node (retSq)  [terminal,   below=0.7cm of chkSq] {Возврат $\sqrt{x}$};
+
+%% Ветка abs
+\node (retAbs) [terminal,   right=4.5cm of isAbs] {Возврат $|x|$};
+
+%% Главная ось
+\draw [arrow] (start)  -- (isLn);
+\draw [arrow] (isLn)   -- node[left]{\footnotesize Нет} (isExp);
+\draw [arrow] (isExp)  -- node[left]{\footnotesize Нет} (isSqrt);
+\draw [arrow] (isSqrt) -- node[left]{\footnotesize Нет} (isAbs);
+\draw [arrow] (isAbs)  -- node[left]{\footnotesize Нет} (errUnk);
+
+%% Правые ветки
+\draw [arrow] (isLn)   -- node[above]{\footnotesize Да} (chkLn);
+\draw [arrow] (chkLn)  -- node[left] {\footnotesize Да} (errLn);
+\draw [arrow] (chkLn)  -- node[left] {\footnotesize Нет}(retLn);
+
+\draw [arrow] (isExp)  -- node[above]{\footnotesize Да} (calcE);
+\draw [arrow] (calcE)  -- (chkFin);
+\draw [arrow] (chkFin) -- node[above]{\footnotesize Да} (errOvf);
+\draw [arrow] (chkFin) -- node[left] {\footnotesize Нет}(retExp);
+
+\draw [arrow] (isSqrt) -- node[above]{\footnotesize Да} (chkSq);
+\draw [arrow] (chkSq)  -- node[left] {\footnotesize Да} (errSq);
+\draw [arrow] (chkSq)  -- node[left] {\footnotesize Нет}(retSq);
+
+\draw [arrow] (isAbs)  -- node[above]{\footnotesize Да} (retAbs);
+
+\end{tikzpicture}
+\end{center}
+
+\newpage
+
+% ================================================================
+% ЧАСТЬ 4 — parse_number()
+%
+% Вершина цикла — conn[3].
+% condRd: Нет → вниз (пост-цикл), Да → вправо (тело цикла).
+% Тело: isDot → Нет (вниз) → incPos; Да (вправо) → chkHD.
+% Возвраты цикла — по правому полю, каждый на своём X:
+%   incPos: X = isDot.east.x + 1.5
+%   setHD:  X = chkHD.east.x + 1.5
+% Оба идут вверх до conn[3] и входят в него сверху.
+% ================================================================
+\begin{center}
+\textbf{Блок-схема функции \texttt{parse\_number()}}
+\end{center}
+
+\begin{center}
+\begin{tikzpicture}[node distance=0.8cm]
+
+%% ---- Главная ось ----
+\node (start)   [terminal]                      {Начало parse\_number};
+\node (init)    [process,    below=of start]    {start = pos; \ has\_dot = false};
+\node (conn3)   [connector,  below=of init]     {3};           %% вершина цикла
+\node (condRd)  [decision,   below=of conn3]
+                {isdigit(s[pos]) или s[pos]==\textquoteleft.\textquoteright?};
+
+%% Пост-цикл (Нет — вниз)
+\node (mkNum)   [process,    below=of condRd]   {num = s.substr(start,\ pos$-$start)};
+\node (chkDot)  [decision,   below=of mkNum]    {num == \textquotedbl.\textquotedbl?};
+\node (errDot)  [terminal,   right=4cm of chkDot]{throw \textquotedbl Одиночная точка\textquotedbl};
+\node (intLoop) [process,    below=of chkDot]   {Цикл: целая часть $\to$ value};
+\node (hasFrac) [decision,   below=of intLoop]  {num[k] == \textquotedbl.\textquotedbl?};
+\node (fracLp)  [process,    right=4cm of hasFrac]{Цикл: дробная часть $\to$ value};
+\node (ret)     [terminal,   below=of hasFrac]  {Возврат value};
+
+%% ---- Тело цикла (Да — вправо от condRd) ----
+\node (isDot)   [decision,   right=5cm of condRd]{s[pos] == \textquoteleft.\textquoteright?};
+\node (incPos)  [process,    below=1.2cm of isDot]{pos++};     %% Нет-ветка isDot
+\node (chkHD)   [decision,   right=3.5cm of isDot]{has\_dot?}; %% Да-ветка isDot
+\node (err2dot) [terminal,   above=0.7cm of chkHD]{throw \textquotedbl Две точки\textquotedbl};
+\node (setHD)   [process,    below=0.7cm of chkHD]{has\_dot=true; \ pos++};
+
+%% ---- Стрелки главной оси ----
+\draw [arrow] (start)   -- (init);
+\draw [arrow] (init)    -- (conn3);
+\draw [arrow] (conn3)   -- (condRd);
+\draw [arrow] (condRd)  -- node[left] {\footnotesize Нет}(mkNum);
+\draw [arrow] (mkNum)   -- (chkDot);
+\draw [arrow] (chkDot)  -- node[above]{\footnotesize Да} (errDot);
+\draw [arrow] (chkDot)  -- node[left] {\footnotesize Нет}(intLoop);
+\draw [arrow] (intLoop) -- (hasFrac);
+\draw [arrow] (hasFrac) -- node[above]{\footnotesize Да} (fracLp);
+\draw [arrow] (hasFrac) -- node[left] {\footnotesize Нет}(ret);
+\draw [arrow] (fracLp.south) -- ++(0,-0.4) -| (ret.east);
+
+%% ---- Стрелки тела цикла ----
+\draw [arrow] (condRd)  -- node[above]{\footnotesize Да} (isDot);
+\draw [arrow] (isDot)   -- node[left] {\footnotesize Нет}(incPos);
+\draw [arrow] (isDot)   -- node[above]{\footnotesize Да} (chkHD);
+\draw [arrow] (chkHD)   -- node[left] {\footnotesize Да} (err2dot);
+\draw [arrow] (chkHD)   -- node[left] {\footnotesize Нет}(setHD);
+
+%% ---- Возврат incPos → conn3 ----
+%% incPos.east ≈ x=7; chkHD.east ≈ x=10, setHD.east ≈ x=10.5
+%% Нужен x > 10.5, чтобы вертикаль не проходила сквозь chkHD/setHD.
+%% Выбираем x = incPos.east + 4 ≈ 11. Входим в conn3 сверху (north).
+\coordinate (IbotR) at ($(incPos.east) + (4.0, 0)$);
+\coordinate (ItopR) at ($(IbotR        |- conn3.north)$);
+\draw [arrow] (incPos.east) -- (IbotR) -- (ItopR) -- (conn3.north);
+
+%% ---- Возврат setHD → conn3 ----
+%% setHD.east ≈ x=10.5; используем x = setHD.east + 2 ≈ 12.5 (другой X).
+%% Входим в conn3 сбоку (east) — другая точка, нет наложения с путём incPos.
+\coordinate (SbotR) at ($(setHD.east) + (2.0, 0)$);
+\coordinate (StopR) at ($(SbotR       |- conn3.east)$);
+\draw [arrow] (setHD.east) -- (SbotR) -- (StopR) -- (conn3.east);
+
+\end{tikzpicture}
+\end{center}
+
+\end{document}

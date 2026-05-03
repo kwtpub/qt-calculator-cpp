@@ -1,0 +1,33 @@
+\input{_preamble}
+
+\begin{document}
+
+\noindent\textbf{Файл:} \texttt{src/main.cpp}\\
+\textbf{Назначение:} точка входа программы; создаёт Qt-приложение и фиксирует C-локаль.
+
+\begin{lstlisting}
+#include "ui/main_window.h"
+
+#include <QApplication>
+#include <QLocale>
+#include <clocale>
+
+int main(int argc, char* argv[]) {
+    // Принудительно ставим C-локаль для разделителя дробной части.
+    // Если этого не сделать, на системах с русской/немецкой локалью
+    // десятичный разделитель — запятая, и std::stod("10.5") вернёт 10.
+    std::setlocale(LC_NUMERIC, "C");
+    QLocale::setDefault(QLocale::c());
+
+    QApplication app(argc, argv);
+    app.setApplicationName("Calculator");
+    app.setOrganizationName("M3O-103BV-25");
+
+    ui::MainWindow w;
+    w.show();
+
+    return app.exec();
+}
+\end{lstlisting}
+
+\end{document}

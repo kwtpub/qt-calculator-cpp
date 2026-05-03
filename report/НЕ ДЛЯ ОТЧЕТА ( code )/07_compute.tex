@@ -1,0 +1,29 @@
+\input{_preamble}
+
+\begin{document}
+
+\noindent\textbf{Файл:} \texttt{src/ui/main\_window.cpp}, метод \texttt{MainWindow::compute()}\\
+\textbf{Назначение:} главный сценарий вычисления; связывает UI с парсером, ловит ошибки.
+
+\begin{lstlisting}
+// Главный сценарий: парсим выражение и считаем.
+// Все исключения (ParseError, EvalError) ловим одним catch — у них
+// общий базовый класс std::exception.
+void MainWindow::compute() {
+    QString expr = expression_edit_->text().trimmed();
+    if (expr.isEmpty()) {
+        show_result("", false);
+        return;
+    }
+    try {
+        double r = calc::evaluate(expr.toStdString());
+        history_label_->setText(expr + " =");
+        show_result(format::format_result(r), false);
+    } catch (const std::exception& e) {
+        history_label_->setText(expr);
+        show_result(QString::fromStdString(e.what()), true);
+    }
+}
+\end{lstlisting}
+
+\end{document}
